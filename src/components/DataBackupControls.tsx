@@ -9,18 +9,29 @@ export interface DataBackupControlsProps {
 const DataBackupControls: FC<DataBackupControlsProps> = ({ onImported }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [message, setMessage] = useState<string>("");
+  const [busy, setBusy] = useState<boolean>(false);
 
   const handleExport = (): void => {
-    const blob = new Blob([exportRecordsJson()], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    const date = new Date().toISOString().slice(0, 10);
+    setBusy(true);
+    void exportRecordsJson()
+      .then((json) => {
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const date = new Date().toISOString().slice(0, 10);
 
-    link.href = url;
-    link.download = `myday-backup-${date}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-    setMessage("已生成备份文件。");
+        link.href = url;
+        link.download = `myday-backup-${date}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        setMessage("已生成备份文件。");
+      })
+      .catch(() => {
+        setMessage("导出失败，请稍后重试。");
+      })
+      .finally(() => {
+        setBusy(false);
+      });
   };
 
   const handleImportClick = (): void => {
@@ -35,15 +46,19 @@ const DataBackupControls: FC<DataBackupControlsProps> = ({ onImported }) => {
 
     const reader = new FileReader();
     reader.onload = () => {
-      try {
-        const importedCount = importRecordsJson(String(reader.result ?? ""));
+      setBusy(true);
+      void importRecordsJson(String(reader.result ?? ""))
+        .then((importedCount) => {
         setMessage(`已导入 ${importedCount} 天记录。`);
         onImported();
-      } catch {
-        setMessage("导入失败，请选择有效的 MyDay JSON 备份。");
-      } finally {
-        event.target.value = "";
-      }
+        })
+        .catch(() => {
+          setMessage("导入失败，请选择有效的 MyDay JSON 备份。");
+        })
+        .finally(() => {
+          event.target.value = "";
+          setBusy(false);
+        });
     };
     reader.readAsText(file);
   };
@@ -51,11 +66,11 @@ const DataBackupControls: FC<DataBackupControlsProps> = ({ onImported }) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
-        <button type="button" className="btn-secondary" onClick={handleExport}>
+        <button type="button" className="btn-secondary" onClick={handleExport} disabled={busy}>
           <Download className="h-4 w-4 shrink-0" aria-hidden />
           导出数据
         </button>
-        <button type="button" className="btn-secondary" onClick={handleImportClick}>
+        <button type="button" className="btn-secondary" onClick={handleImportClick} disabled={busy}>
           <Upload className="h-4 w-4 shrink-0" aria-hidden />
           导入数据
         </button>

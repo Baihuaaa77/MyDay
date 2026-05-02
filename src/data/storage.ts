@@ -1,8 +1,10 @@
 import type { DayRecord } from "../types";
 
-/** localStorage 中存放全部每日记录的键名。 */
-const STORAGE_KEY = "myday-records";
-
+const DB_NAME = "myday-db";
+const DB_VERSION = 1;
+const RECORD_STORE_NAME = "records";
+const LEGACY_STORAGE_KEY = "myday-records";
+const MIGRATION_FLAG_KEY = "myday-indexeddb-migrated";
 const DATE_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function createEmptyRecord(date: string): DayRecord {
@@ -78,74 +80,136 @@ function normalizeRecords(value: unknown): Record<string, DayRecord> {
   return normalized;
 }
 
-/**
- * 将 localStorage 中的原始字符串解析为「日期 -> DayRecord」映射。
- * 若键不存在、内容非法或 JSON 损坏，则返回空对象，避免应用崩溃。
- */
-function parseAllRecords(raw: string | null): Record<string, DayRecord> {
+function parseLegacyRecords(raw: string | null): Record<string, DayRecord> {
   if (raw === null || raw === "") {
     return {};
   }
+
   try {
-    const parsed: unknown = JSON.parse(raw);
-    return normalizeRecords(parsed);
+    return normalizeRecords(JSON.parse(raw) as unknown);
   } catch {
     return {};
   }
 }
 
-/**
- * 读取 localStorage 中保存的全部每日记录，返回以日期字符串为键的对象。
- * 类比 Python：相当于从磁盘读一个 dict，键是 "YYYY-MM-DD"，值是 DayRecord。
- */
-export function getAllRecords(): Record<string, DayRecord> {
-  return parseAllRecords(localStorage.getItem(STORAGE_KEY));
+function requestToPromise<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
 }
 
-/**
- * 根据日期（"YYYY-MM-DD"）获取该日的 DayRecord。
- * 若该日尚未在本地保存过，则返回一个「空」的 DayRecord（仅设置 date，tasks 为空、rating 为 null、note 为空串），
- * 且不会自动写入 localStorage；只有调用 saveRecord 时才会持久化。
- */
-export function getRecord(date: string): DayRecord {
-  const all = getAllRecords();
-  const existing = all[date];
-  if (existing !== undefined) {
-    return existing;
+function transactionDone(transaction: IDBTransaction): Promise<void> {
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error);
+  });
+}
+
+function openDatabase(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(RECORD_STORE_NAME)) {
+        db.createObjectStore(RECORD_STORE_NAME, { keyPath: "date" });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function readAllRecordsFromIndexedDb(): Promise<Record<string, DayRecord>> {
+  const db = await openDatabase();
+  try {
+    const transaction = db.transaction(RECORD_STORE_NAME, "readonly");
+    const store = transaction.objectStore(RECORD_STORE_NAME);
+    const records = await requestToPromise<DayRecord[]>(store.getAll());
+
+    return records.reduce<Record<string, DayRecord>>((acc, record) => {
+      acc[record.date] = record;
+      return acc;
+    }, {});
+  } finally {
+    db.close();
   }
-  return createEmptyRecord(date);
 }
 
-/**
- * 保存一条 DayRecord：以 record.date 为键，合并进全量映射后写回 localStorage。
- * 若同一天已存在记录，会被本次传入的 record 覆盖。
- */
-export function saveRecord(record: DayRecord): void {
-  const all = getAllRecords();
-  all[record.date] = record;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+async function writeRecordsToIndexedDb(records: Record<string, DayRecord>): Promise<void> {
+  const db = await openDatabase();
+  try {
+    const transaction = db.transaction(RECORD_STORE_NAME, "readwrite");
+    const store = transaction.objectStore(RECORD_STORE_NAME);
+
+    for (const record of Object.values(records)) {
+      store.put(record);
+    }
+
+    await transactionDone(transaction);
+  } finally {
+    db.close();
+  }
 }
 
-export function exportRecordsJson(): string {
+async function ensureLegacyDataMigrated(): Promise<void> {
+  if (localStorage.getItem(MIGRATION_FLAG_KEY) === "1") {
+    return;
+  }
+
+  const legacyRecords = parseLegacyRecords(localStorage.getItem(LEGACY_STORAGE_KEY));
+  if (Object.keys(legacyRecords).length > 0) {
+    const indexedDbRecords = await readAllRecordsFromIndexedDb();
+    await writeRecordsToIndexedDb({ ...legacyRecords, ...indexedDbRecords });
+  }
+
+  localStorage.setItem(MIGRATION_FLAG_KEY, "1");
+}
+
+export async function getAllRecords(): Promise<Record<string, DayRecord>> {
+  await ensureLegacyDataMigrated();
+  return readAllRecordsFromIndexedDb();
+}
+
+export async function getRecord(date: string): Promise<DayRecord> {
+  const all = await getAllRecords();
+  return all[date] ?? createEmptyRecord(date);
+}
+
+export async function saveRecord(record: DayRecord): Promise<void> {
+  const db = await openDatabase();
+  try {
+    const transaction = db.transaction(RECORD_STORE_NAME, "readwrite");
+    transaction.objectStore(RECORD_STORE_NAME).put(record);
+    await transactionDone(transaction);
+  } finally {
+    db.close();
+  }
+}
+
+export async function exportRecordsJson(): Promise<string> {
   return JSON.stringify(
     {
       app: "MyDay",
-      version: 1,
+      version: 2,
+      storage: "indexedDB",
       exportedAt: new Date().toISOString(),
-      records: getAllRecords(),
+      records: await getAllRecords(),
     },
     null,
     2,
   );
 }
 
-export function importRecordsJson(raw: string): number {
-  const parsed: unknown = JSON.parse(raw);
+export async function importRecordsJson(raw: string): Promise<number> {
+  const parsed: unknown = JSON.parse(raw) as unknown;
   const source = isPlainObject(parsed) && "records" in parsed ? parsed.records : parsed;
   const incoming = normalizeRecords(source);
-  const current = getAllRecords();
-  const next = { ...current, ...incoming };
+  const current = await getAllRecords();
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  await writeRecordsToIndexedDb({ ...current, ...incoming });
   return Object.keys(incoming).length;
 }

@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState } from "react";
+import { type FC, useEffect, useMemo, useState } from "react";
 import { Award, BarChart3, CircleCheck, LineChart } from "lucide-react";
 import {
   Area,
@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import { getAllRecords } from "../data/storage";
+import type { DayRecord } from "../types";
 import {
   formatShortAxisDate,
   getDateStringsEndingTodayInclusive,
@@ -64,6 +65,8 @@ function getXAxisInterval(pointCount: number): number {
 const StatsPage: FC = () => {
   const [rangeId, setRangeId] = useState<StatsRangeId>("d30");
   const [dataRevision, setDataRevision] = useState<number>(0);
+  const [allRecords, setAllRecords] = useState<Record<string, DayRecord>>({});
+  const [dataError, setDataError] = useState<string | null>(null);
   const selectedOption = RANGE_OPTIONS.find((o) => o.id === rangeId) ?? RANGE_OPTIONS[1];
   const rangeDays = selectedOption.days;
   const rangeLabel = selectedOption.label;
@@ -78,13 +81,32 @@ const StatsPage: FC = () => {
     [datesWindow.length],
   );
 
+  useEffect(() => {
+    let cancelled = false;
+
+    void getAllRecords()
+      .then((records) => {
+        if (!cancelled) {
+          setAllRecords(records);
+          setDataError(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDataError("读取统计数据失败，请刷新后重试。");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dataRevision]);
+
   /** 一次读 localStorage 并派生图表数据与汇总，避免 getAllRecords 引用每次变化导致 memo 失效 */
   const { chartRows, averageRating, totalCompletedTasks, longestStreak } =
     useMemo(() => {
-      const all = getAllRecords();
-
       const rows: DailyChartRow[] = datesWindow.map((ds) => {
-        const r = all[ds];
+        const r = allRecords[ds];
         const label = formatShortAxisDate(ds);
         if (r === undefined) {
           return {
@@ -111,7 +133,7 @@ const StatsPage: FC = () => {
       let completedTotal = 0;
 
       for (const ds of datesWindow) {
-        const r = all[ds];
+        const r = allRecords[ds];
         if (r === undefined) {
           continue;
         }
@@ -131,9 +153,9 @@ const StatsPage: FC = () => {
         chartRows: rows,
         averageRating,
         totalCompletedTasks: completedTotal,
-        longestStreak: computeLongestCheckinStreak(all),
+        longestStreak: computeLongestCheckinStreak(allRecords),
       };
-    }, [datesWindow, dataRevision]);
+    }, [allRecords, datesWindow]);
 
   /** Recharts Tooltip 统一样式（边框与页面卡片一致，偏浅） */
   const tooltipStyle = {
@@ -160,6 +182,9 @@ const StatsPage: FC = () => {
             </div>
           </div>
           <QuoteOfTheDay variant="stats" className="mt-3 max-w-3xl" />
+          {dataError !== null && (
+            <p className="mt-3 text-sm font-medium text-rose-600">{dataError}</p>
+          )}
         </div>
 
         <div className="flex w-full flex-col gap-3 lg:w-auto lg:items-end">

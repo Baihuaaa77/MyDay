@@ -46,6 +46,8 @@ const NowPage: FC = () => {
 
   const {
     record,
+    loading,
+    error,
     addTask,
     toggleTask,
     deleteTask,
@@ -78,6 +80,12 @@ const NowPage: FC = () => {
             </div>
           </div>
           <QuoteOfTheDay variant="present" className="mt-3 max-w-2xl" />
+          {error !== null && (
+            <p className="mt-3 text-sm font-medium text-rose-600">{error}</p>
+          )}
+          {loading && (
+            <p className="mt-3 text-sm font-medium text-slate-500">正在读取本地记录...</p>
+          )}
         </div>
 
         <div

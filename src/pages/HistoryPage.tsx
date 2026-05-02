@@ -1,4 +1,4 @@
-import { type FC, useMemo, useState } from "react";
+import { type FC, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   CalendarRange,
@@ -9,6 +9,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { getAllRecords } from "../data/storage";
+import type { DayRecord } from "../types";
 import {
   formatDateString,
   formatDisplayDate,
@@ -116,6 +117,8 @@ const HistoryPage: FC = () => {
 
   /** 久远日「开始编辑」前的确认弹层是否打开 */
   const [confirmOldEditOpen, setConfirmOldEditOpen] = useState<boolean>(false);
+  const [allRecords, setAllRecords] = useState<Record<string, DayRecord>>({});
+  const [dataError, setDataError] = useState<string | null>(null);
 
   const {
     record,
@@ -134,7 +137,32 @@ const HistoryPage: FC = () => {
 
   const cells = useMemo(() => buildMonthCells(year, monthIndex), [year, monthIndex]);
 
-  const allRecords = getAllRecords();
+  useEffect(() => {
+    let cancelled = false;
+
+    void getAllRecords()
+      .then((records) => {
+        if (!cancelled) {
+          setAllRecords(records);
+          setDataError(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDataError("读取历史数据失败，请刷新后重试。");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (record !== null) {
+      setAllRecords((prev) => ({ ...prev, [record.date]: record }));
+    }
+  }, [record]);
 
   /** 当前选中日是否为「前天及更早」且尚未在本会话中确认编辑 */
   const needsOldDateConfirm: boolean =
@@ -194,6 +222,9 @@ const HistoryPage: FC = () => {
             </div>
           </div>
           <QuoteOfTheDay variant="history" className="mt-3 max-w-3xl" />
+          {dataError !== null && (
+            <p className="mt-3 text-sm font-medium text-rose-600">{dataError}</p>
+          )}
         </div>
         <div className="rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-semibold text-slate-600 shadow-sm">
           {monthTitle}
@@ -387,14 +418,14 @@ const HistoryPage: FC = () => {
                   {/* 编辑模式下的 emoji 选择器 */}
                   <div className="space-y-4">
                     <h3 className="section-title">当日状态</h3>
-                    <MoodPicker value={record.moodId} onChange={setMood} />
+                    <MoodPicker value={displayRecord.moodId} onChange={setMood} />
                   </div>
 
                   <div className="space-y-4">
                     <h3 className="section-title">任务</h3>
                     <div className="mt-2">
                       <TaskList
-                        tasks={record.tasks}
+                        tasks={displayRecord.tasks}
                         onAddTask={addTask}
                         onToggleTask={toggleTask}
                         onDeleteTask={deleteTask}
@@ -409,7 +440,7 @@ const HistoryPage: FC = () => {
                         <p className="text-base text-slate-600">
                           未来日期不能打分；到达当天后可在「当下」或本页对那一天自评。
                         </p>
-                        {record.rating !== null && (
+                        {displayRecord.rating !== null && (
                           <p className="text-sm text-slate-500">
                             （本地若存在分数将被忽略，保存时不写入评分。）
                           </p>
@@ -419,14 +450,14 @@ const HistoryPage: FC = () => {
                     ) : (
                       <>
                         <p className="text-sm text-slate-500">点击星星选择分数，可随时修改。</p>
-                        <StarRating value={record.rating} onChange={setRating} />
+                        <StarRating value={displayRecord.rating} onChange={setRating} />
                       </>
                     )}
                   </div>
 
                   <div className="space-y-4">
                     <h3 className="section-title">今日记录</h3>
-                    <DailyNote value={record.note} onChange={setNote} />
+                    <DailyNote value={displayRecord.note} onChange={setNote} />
                   </div>
                 </>
               )}

@@ -1,0 +1,18 @@
+{
+  "name": "MyDay",
+  "short_name": "MyDay",
+  "description": "轻量的每日计划、复盘和数据统计工具。",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "./myday-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
