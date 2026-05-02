@@ -62,6 +62,33 @@ const NowPage: FC = () => {
 
   const isPlanningTomorrow = isFutureDateString(activeDateStr);
 
+  const focusCopy = {
+    yesterday: {
+      statusTitle: "回看昨天，补上一点真实状态。",
+      statusBody: "把任务、感受和结果留在同一个地方，复盘时就不用到处拼线索。",
+      moodTitle: "昨日状态",
+      moodBody: "选择一个最能代表昨天的 emoji",
+      moodEmptyLabel: "选一个代表昨天的状态吧",
+      noteTitle: "昨日记录",
+    },
+    today: {
+      statusTitle: "用一个状态，为今天定调。",
+      statusBody: "把今天要做的事、给自己的评分和随手记录放在这里，清清楚楚过完这一天。",
+      moodTitle: "今日状态",
+      moodBody: "选择一个最能代表今天的 emoji",
+      moodEmptyLabel: "选一个代表今天的状态吧",
+      noteTitle: "今日记录",
+    },
+    tomorrow: {
+      statusTitle: "先给明天留一个轻盈的开场。",
+      statusBody: "提前写下计划和提醒，等明天真正到来时，再补上状态、评分和复盘。",
+      moodTitle: "明日状态",
+      moodBody: "选择一个你希望带进明天的 emoji",
+      moodEmptyLabel: "选一个你希望带进明天的状态吧",
+      noteTitle: "明日记录",
+    },
+  }[focus];
+
   const focusButtonClass = (isActive: boolean): string =>
     `segmented-button flex-1 ${isActive ? "segmented-button-active" : "segmented-button-idle"}`;
 
@@ -133,10 +160,10 @@ const NowPage: FC = () => {
                 {formatDisplayDate(activeDateStr)}
               </div>
               <h2 className="mt-6 max-w-md text-3xl font-bold leading-tight sm:text-4xl">
-                用一个状态，为今天定调。
+                {focusCopy.statusTitle}
               </h2>
               <p className="mt-4 max-w-md text-sm leading-6 text-slate-600">
-                任务、评分和记录都会围绕这一天展开，保持轻量，但信息足够完整。
+                {focusCopy.statusBody}
               </p>
             </div>
             <div className="mt-8 flex items-center gap-3 text-sm font-medium text-slate-600">
@@ -150,11 +177,15 @@ const NowPage: FC = () => {
           <div className="p-6 sm:p-8">
             <div className="mb-5 flex items-center justify-between gap-4">
               <div>
-                <h2 className="section-title">今日状态</h2>
-                <p className="section-copy">选择一个最能代表今天的 emoji</p>
+                <h2 className="section-title">{focusCopy.moodTitle}</h2>
+                <p className="section-copy">{focusCopy.moodBody}</p>
               </div>
             </div>
-            <MoodPicker value={record?.moodId ?? null} onChange={setMood} />
+            <MoodPicker
+              value={record?.moodId ?? null}
+              onChange={setMood}
+              emptyLabel={focusCopy.moodEmptyLabel}
+            />
           </div>
         </div>
       </section>
@@ -229,7 +260,7 @@ const NowPage: FC = () => {
                 <NotebookText className="h-5 w-5" aria-hidden />
               </div>
               <div>
-                <h2 className="section-title">今日记录</h2>
+                <h2 className="section-title">{focusCopy.noteTitle}</h2>
                 <p className="section-copy">沉淀当天的关键进展、感受或复盘。</p>
               </div>
             </div>

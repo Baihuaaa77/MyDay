@@ -11,6 +11,7 @@ export interface MoodPickerProps {
   value: string | null;
   onChange?: (moodId: string) => void;
   readOnly?: boolean;
+  emptyLabel?: string;
 }
 
 /**
@@ -21,7 +22,7 @@ export interface MoodPickerProps {
  *          下方仍保留小选择器可以切换。
  * readOnly 模式：仅展示已选 emoji 大图，不显示选择器。
  */
-const MoodPicker: FC<MoodPickerProps> = ({ value, onChange, readOnly }) => {
+const MoodPicker: FC<MoodPickerProps> = ({ value, onChange, readOnly, emptyLabel }) => {
   const selectedMood = getMoodById(value);
 
   /**
@@ -72,7 +73,7 @@ const MoodPicker: FC<MoodPickerProps> = ({ value, onChange, readOnly }) => {
               ?
             </span>
             <span className="px-3 text-center text-xs font-medium text-slate-400">
-              {readOnly ? "未选择状态" : "选一个代表今天的状态吧"}
+              {readOnly ? "未选择状态" : emptyLabel ?? "选一个代表今天的状态吧"}
             </span>
           </div>
         )}
