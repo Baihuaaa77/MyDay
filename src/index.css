@@ -23,7 +23,7 @@
     min-width: 320px;
     margin: 0;
     background:
-      linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(239, 246, 244, 0.92) 46%, rgba(250, 247, 242, 0.95) 100%);
+      linear-gradient(135deg, #edf7f8 0%, #f4f8fb 46%, #f8f5ee 100%);
   }
 
   ::selection {
@@ -40,10 +40,56 @@
 
 @layer components {
   .app-shell {
-    @apply min-h-screen text-slate-900;
+    @apply relative isolate min-h-screen overflow-x-hidden text-slate-900;
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 42%),
-      linear-gradient(135deg, #f8fafc 0%, #eef7f4 48%, #f8f4ec 100%);
+      radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.95), transparent 20rem),
+      radial-gradient(circle at 86% 12%, rgba(125, 211, 252, 0.22), transparent 24rem),
+      radial-gradient(circle at 78% 86%, rgba(251, 191, 36, 0.14), transparent 22rem),
+      linear-gradient(135deg, #e8f5f7 0%, #f5f8fb 46%, #f8f5ef 100%);
+  }
+
+  .app-shell::before,
+  .app-shell::after {
+    content: "";
+    @apply pointer-events-none fixed inset-0;
+    z-index: 0;
+  }
+
+  .app-shell::before {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.18) 42%, rgba(255, 255, 255, 0.34)),
+      repeating-linear-gradient(
+        108deg,
+        transparent 0,
+        transparent 18px,
+        rgba(255, 255, 255, 0.28) 19px,
+        rgba(255, 255, 255, 0.28) 20px,
+        transparent 21px,
+        transparent 42px
+      );
+    backdrop-filter: blur(18px) saturate(1.16);
+    opacity: 0.72;
+  }
+
+  .app-shell::after {
+    background:
+      repeating-linear-gradient(
+        104deg,
+        transparent 0,
+        transparent 70px,
+        rgba(14, 116, 144, 0.08) 72px,
+        rgba(14, 116, 144, 0.08) 73px,
+        transparent 76px,
+        transparent 132px
+      ),
+      radial-gradient(circle at 50% -8%, rgba(255, 255, 255, 0.78), transparent 28rem);
+    mix-blend-mode: soft-light;
+    opacity: 0.7;
+  }
+
+  .app-shell > * {
+    @apply relative;
+    z-index: 1;
   }
 
   .page-shell {
@@ -78,6 +124,27 @@
     @apply rounded-2xl border border-white/75 bg-white/90 p-5 shadow-[0_18px_55px_rgba(15,23,42,0.07)] backdrop-blur-xl transition-all duration-300 sm:p-6;
   }
 
+  .panel-glow {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(20, 184, 166, 0.1), transparent 34%),
+      radial-gradient(circle at 100% 100%, rgba(245, 158, 11, 0.1), transparent 32%),
+      rgba(255, 255, 255, 0.9);
+  }
+
+  .panel-glow-cool {
+    background:
+      radial-gradient(circle at 8% 0%, rgba(14, 165, 233, 0.08), transparent 32%),
+      radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.1), transparent 34%),
+      rgba(255, 255, 255, 0.92);
+  }
+
+  .panel-glow-warm {
+    background:
+      radial-gradient(circle at 10% 0%, rgba(245, 158, 11, 0.1), transparent 30%),
+      radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.08), transparent 34%),
+      rgba(255, 255, 255, 0.92);
+  }
+
   .panel-interactive {
     @apply hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)];
   }
@@ -87,11 +154,11 @@
   }
 
   .control-shell {
-    @apply rounded-2xl border border-slate-200/70 bg-slate-100/70 p-1 shadow-inner;
+    @apply rounded-2xl border border-slate-200/70 bg-slate-100/70 p-1.5 shadow-inner;
   }
 
   .segmented-button {
-    @apply rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+    @apply rounded-xl px-5 py-3 text-base font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
   }
 
   .segmented-button-active {
