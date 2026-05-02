@@ -1,0 +1,133 @@
+/* Tailwind 三层指令：基础样式、组件层、工具类（按需生成最终 CSS） */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    font-family:
+      Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB",
+      sans-serif;
+  }
+
+  html {
+    background: #f5f7fb;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-width: 320px;
+    margin: 0;
+    background:
+      linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(239, 246, 244, 0.92) 46%, rgba(250, 247, 242, 0.95) 100%);
+  }
+
+  ::selection {
+    background: rgba(20, 184, 166, 0.18);
+    color: #0f172a;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen text-slate-900;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0) 42%),
+      linear-gradient(135deg, #f8fafc 0%, #eef7f4 48%, #f8f4ec 100%);
+  }
+
+  .page-shell {
+    @apply mx-auto w-full max-w-screen-2xl animate-fade-in px-4 py-8 leading-relaxed sm:px-6 lg:px-8 lg:py-10;
+  }
+
+  .page-header {
+    @apply flex flex-col gap-5 rounded-2xl border border-white/70 bg-white/80 p-5 shadow-[0_22px_70px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:p-6 lg:flex-row lg:items-end lg:justify-between;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.14em] text-teal-700;
+  }
+
+  .page-title {
+    @apply text-3xl font-bold text-slate-900 sm:text-4xl;
+  }
+
+  .section-title {
+    @apply text-base font-semibold text-slate-900 sm:text-lg;
+  }
+
+  .section-copy {
+    @apply mt-1 text-sm leading-6 text-slate-500;
+  }
+
+  .icon-tile {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/75 bg-white text-teal-700 shadow-sm;
+  }
+
+  .panel {
+    @apply rounded-2xl border border-white/75 bg-white/90 p-5 shadow-[0_18px_55px_rgba(15,23,42,0.07)] backdrop-blur-xl transition-all duration-300 sm:p-6;
+  }
+
+  .panel-interactive {
+    @apply hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)];
+  }
+
+  .panel-muted {
+    @apply rounded-2xl border border-slate-200/70 bg-slate-50/70 p-5;
+  }
+
+  .control-shell {
+    @apply rounded-2xl border border-slate-200/70 bg-slate-100/70 p-1 shadow-inner;
+  }
+
+  .segmented-button {
+    @apply rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+  }
+
+  .segmented-button-active {
+    @apply bg-white text-teal-800 shadow-sm ring-1 ring-teal-100;
+  }
+
+  .segmented-button-idle {
+    @apply text-slate-500 hover:bg-white/70 hover:text-teal-800;
+  }
+
+  .btn-primary {
+    @apply inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(13,148,136,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-teal-700 hover:shadow-[0_16px_34px_rgba(13,148,136,0.24)] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+  }
+
+  .icon-button {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-slate-200/80 bg-white px-4 py-3 text-base leading-relaxed text-slate-950 shadow-sm outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-100;
+  }
+
+  .soft-list-item {
+    @apply rounded-xl border border-slate-200/70 bg-slate-50/80 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:shadow-md;
+  }
+
+  .metric-card {
+    @apply panel panel-interactive relative overflow-hidden;
+  }
+
+  .metric-card::before {
+    content: "";
+    @apply absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 via-emerald-400 to-amber-400;
+  }
+}
