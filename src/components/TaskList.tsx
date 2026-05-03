@@ -27,7 +27,7 @@ const TaskList: FC<TaskListProps> = ({
 
       {tasks.length === 0 ? (
         <div className="panel-muted flex flex-col items-center justify-center gap-4 py-10 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-teal-500 shadow-sm">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[#10aab2] shadow-sm">
             <Inbox className="h-9 w-9" strokeWidth={1.25} aria-hidden />
           </div>
           <p className="max-w-sm text-sm leading-6 text-slate-500">{emptyText}</p>

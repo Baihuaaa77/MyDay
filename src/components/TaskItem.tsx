@@ -14,12 +14,12 @@ const TaskItem: FC<TaskItemProps> = ({ task, onToggle, onDelete }) => {
       <button
         type="button"
         onClick={() => onToggle(task.id)}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-teal-700 transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-[#0b8f99] transition hover:bg-cyan-50 focus:outline-none focus:ring-2 focus:ring-cyan-400"
         aria-label={task.completed ? "标记为未完成" : "标记为已完成"}
         aria-pressed={task.completed}
       >
         {task.completed ? (
-          <CheckSquare className="h-6 w-6 text-teal-600" aria-hidden />
+          <CheckSquare className="h-6 w-6 text-[#10aab2]" aria-hidden />
         ) : (
           <Square className="h-6 w-6 text-slate-400" aria-hidden />
         )}

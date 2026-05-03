@@ -40,7 +40,7 @@ function getCalendarDayButtonClass(params: {
 }): string {
   const { stored, rating, isSelected, isToday } = params;
   const base =
-    "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border p-1 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500";
+    "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border p-1 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400";
 
   if (isSelected) {
     return `${base} z-10 border-[#10aab2] bg-[#10aab2] text-white shadow-md ring-2 ring-cyan-200`;
@@ -56,14 +56,14 @@ function getCalendarDayButtonClass(params: {
     } else if (rating <= 6) {
       heat = "border-amber-100 bg-amber-50 hover:border-amber-200";
     } else if (rating <= 8) {
-      heat = "border-teal-100 bg-teal-50 hover:border-teal-200";
+      heat = "border-cyan-100 bg-cyan-50 hover:border-cyan-200";
     } else {
-      heat = "border-teal-200 bg-teal-100 hover:bg-teal-50";
+      heat = "border-cyan-200 bg-cyan-100 hover:bg-cyan-50";
     }
   }
 
   if (isToday) {
-    return `${base} ${heat} ring-1 ring-teal-300`;
+    return `${base} ${heat} ring-1 ring-cyan-300`;
   }
   return `${base} ${heat} hover:shadow-sm`;
 }
@@ -96,7 +96,7 @@ function TaskSummaryList({ tasks }: { tasks: Task[] }): JSX.Element {
         <li key={task.id} className="soft-list-item flex items-start gap-3 px-4 py-3">
           <span className="mt-0.5 shrink-0" aria-hidden>
             {task.completed ? (
-              <Check className="h-5 w-5 text-teal-600" aria-hidden />
+              <Check className="h-5 w-5 text-[#10aab2]" aria-hidden />
             ) : (
               <Circle className="h-5 w-5 text-slate-400" aria-hidden />
             )}
@@ -208,7 +208,7 @@ const HistoryPage: FC = () => {
       <header className="mobile-workspace-header lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0b8f99]">
               Timeline archive
             </p>
             <h1 className="mt-1 text-2xl font-bold text-slate-950">历史记录</h1>
@@ -310,7 +310,7 @@ const HistoryPage: FC = () => {
                     </span>
                   ) : stored ? (
                     <span
-                      className="h-1.5 w-1.5 rounded-full bg-teal-500"
+                      className="h-1.5 w-1.5 rounded-full bg-amber-400"
                       aria-hidden
                       title="有记录"
                     />
@@ -335,7 +335,7 @@ const HistoryPage: FC = () => {
         <div className="hidden min-w-0 lg:col-span-3 lg:block">
           {selectedDateStr === null ? (
             <div className="panel flex flex-col items-center justify-center px-6 py-16 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-teal-500 shadow-inner">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-[#10aab2] shadow-inner">
                 <CalendarRange className="h-8 w-8" strokeWidth={1.25} aria-hidden />
               </div>
               <p className="mt-5 max-w-sm text-sm leading-6 text-slate-500">
@@ -518,7 +518,7 @@ const HistoryPage: FC = () => {
 
             <section className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4">
               <div className="flex items-center gap-3">
-                <Sparkles className="h-5 w-5 text-teal-700" aria-hidden />
+                <Sparkles className="h-5 w-5 text-[#0b8f99]" aria-hidden />
                 <h3 className="text-base font-semibold text-slate-950">状态与评分</h3>
               </div>
               <div className="mt-4">
@@ -540,7 +540,7 @@ const HistoryPage: FC = () => {
 
             <section>
               <div className="mb-3 flex items-center gap-2">
-                <ListChecks className="h-5 w-5 text-teal-700" aria-hidden />
+                <ListChecks className="h-5 w-5 text-[#0b8f99]" aria-hidden />
                 <h3 className="text-base font-semibold text-slate-950">待办任务</h3>
               </div>
               {canEditSelectedDate ? (
@@ -558,7 +558,7 @@ const HistoryPage: FC = () => {
 
             <section>
               <div className="mb-3 flex items-center gap-2">
-                <NotebookText className="h-5 w-5 text-teal-700" aria-hidden />
+                <NotebookText className="h-5 w-5 text-[#0b8f99]" aria-hidden />
                 <h3 className="text-base font-semibold text-slate-950">当日记录</h3>
               </div>
               <DailyNote

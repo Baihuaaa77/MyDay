@@ -55,7 +55,7 @@ const StarRating: FC<StarRatingProps> = ({ value, onChange, readOnly = false }) 
             aria-checked={value === score}
             aria-label={`${score} 分`}
             onClick={() => handleSelect(score)}
-            className="star-rating-button transition-all duration-300 hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1"
+            className="star-rating-button transition-all duration-300 hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1"
           >
             {star}
           </button>

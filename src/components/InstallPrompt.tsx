@@ -85,7 +85,7 @@ const InstallPrompt: FC = () => {
   return (
     <aside className="mobile-install-prompt lg:hidden" aria-label="安装 MyDay">
       <div className="flex min-w-0 items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-50 text-[#0b8f99]">
           {installEvent ? (
             <Download className="h-5 w-5" aria-hidden />
           ) : (

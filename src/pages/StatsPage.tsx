@@ -176,12 +176,12 @@ const StatsPage: FC = () => {
         <header className="mobile-workspace-header">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0b8f99]">
                 Performance view
               </p>
               <h1 className="mt-1 text-2xl font-bold text-slate-950">数据统计</h1>
             </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#0b8f99] shadow-sm">
               <BarChart3 className="h-6 w-6" aria-hidden />
             </div>
           </div>
@@ -213,7 +213,7 @@ const StatsPage: FC = () => {
 
         <section className="mt-4 grid grid-cols-3 gap-2">
           <div className="mobile-metric-tile">
-            <LineChart className="h-4 w-4 text-teal-600" aria-hidden />
+            <LineChart className="h-4 w-4 text-[#10aab2]" aria-hidden />
             <span>平均</span>
             <strong>{averageRating === null ? "—" : averageRating}</strong>
           </div>
@@ -333,7 +333,7 @@ const StatsPage: FC = () => {
                 手机、电脑各自本地保存，可用 JSON 手动迁移。
               </span>
             </span>
-            <span className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-semibold text-teal-700">
+            <span className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-semibold text-[#0b8f99]">
               {mobileBackupOpen ? "收起" : "打开"}
             </span>
           </button>
@@ -397,10 +397,10 @@ const StatsPage: FC = () => {
         <div className="metric-card panel-glow-cool">
           <div className="flex items-center gap-3">
             <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-50"
               aria-hidden
             >
-              <LineChart className="h-5 w-5 text-teal-600" />
+              <LineChart className="h-5 w-5 text-[#10aab2]" />
             </div>
             <p className="text-sm font-semibold text-slate-600">平均评分</p>
           </div>

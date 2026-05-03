@@ -50,7 +50,7 @@ const MoodPicker: FC<MoodPickerProps> = ({
         aria-controls={listId}
         onClick={() => !readOnly && setIsOpen((open) => !open)}
         onFocus={() => !readOnly && setIsOpen(true)}
-        className="flex w-full items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 text-left shadow-inner transition-all duration-300 hover:border-teal-200 hover:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-default disabled:hover:border-slate-200/80 disabled:hover:bg-slate-50/80 sm:gap-4 sm:p-5"
+        className="flex w-full items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 text-left shadow-inner transition-all duration-300 hover:border-cyan-200 hover:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:cursor-default disabled:hover:border-slate-200/80 disabled:hover:bg-slate-50/80 sm:gap-4 sm:p-5"
       >
         <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white bg-white text-center shadow-sm sm:h-24 sm:w-24 sm:rounded-[1.5rem]">
           {selectedMood ? (
@@ -104,9 +104,9 @@ const MoodPicker: FC<MoodPickerProps> = ({
                   key={mood.id}
                   type="button"
                   onClick={() => handleSelect(mood.id)}
-                  className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 sm:h-14 sm:w-14 sm:text-3xl ${
+                  className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 sm:h-14 sm:w-14 sm:text-3xl ${
                     isSelected
-                      ? "scale-105 bg-teal-50 shadow-sm ring-2 ring-teal-500"
+                      ? "scale-105 bg-cyan-50 shadow-sm ring-2 ring-[#10aab2]"
                       : "border border-slate-200/70 bg-slate-50/80 hover:scale-105 hover:bg-white hover:shadow-md"
                   }`}
                   aria-label={mood.label}

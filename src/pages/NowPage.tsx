@@ -122,14 +122,14 @@ const NowPage: FC = () => {
         <header className="mobile-workspace-header">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#0b8f99]">
                 {formatDisplayDate(activeDateStr)}
               </p>
               <h1 className="mt-1 text-2xl font-bold leading-tight text-slate-950">
                 {focusCopy.taskTitle}
               </h1>
             </div>
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-[#0b8f99] shadow-sm">
               <Sun className="h-6 w-6" aria-hidden />
             </div>
           </div>
@@ -318,9 +318,9 @@ const NowPage: FC = () => {
 
       <section className="panel panel-glow panel-interactive mt-6 overflow-hidden p-0 sm:p-0">
         <div className="grid min-w-0 max-w-full gap-0 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)]">
-          <div className="min-w-0 max-w-full rounded-t-2xl border-b border-teal-100/80 bg-gradient-to-br from-teal-50 via-white to-amber-50/70 p-4 text-slate-900 sm:p-6 lg:rounded-l-2xl lg:rounded-tr-none lg:border-b-0 lg:border-r lg:border-teal-100/80 lg:p-8">
+          <div className="min-w-0 max-w-full rounded-t-2xl border-b border-cyan-100/80 bg-gradient-to-br from-cyan-50 via-white to-amber-50/70 p-4 text-slate-900 sm:p-6 lg:rounded-l-2xl lg:rounded-tr-none lg:border-b-0 lg:border-r lg:border-cyan-100/80 lg:p-8">
             <div className="min-w-0">
-              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-teal-200/80 bg-white/75 px-3 py-2 text-sm font-semibold text-teal-700 shadow-sm sm:gap-2.5 sm:px-4 sm:text-base">
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-cyan-200/80 bg-white/75 px-3 py-2 text-sm font-semibold text-[#0b8f99] shadow-sm sm:gap-2.5 sm:px-4 sm:text-base">
                 <CalendarClock className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
                 {formatDisplayDate(activeDateStr)}
               </div>
