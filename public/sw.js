@@ -1,5 +1,9 @@
-const CACHE_NAME = "myday-static-v3";
-const CORE_ASSETS = ["./", "./manifest.webmanifest", "./myday-mark.svg"];
+const CACHE_NAME = "myday-static-v5";
+const CORE_ASSETS = [
+  "./",
+  "./manifest.webmanifest",
+  "./myday-icon-1024.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -42,19 +46,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) {
-        return cached;
-      }
+  if (["style", "script", "worker", "image", "font", "manifest"].includes(request.destination)) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const networkFetch = fetch(request)
+          .then((response) => {
+            if (response.ok) {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          })
+          .catch(() => cached);
 
-      return fetch(request).then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
-        return response;
-      });
-    }),
-  );
+        return cached ?? networkFetch.then((response) => response ?? caches.match("./"));
+      }),
+    );
+  }
 });

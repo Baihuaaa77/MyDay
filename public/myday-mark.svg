@@ -1,13 +1,3 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="5" y="5" width="54" height="54" rx="17" fill="url(#fill)"/>
-  <path d="M18.4 38.1C27.2 35.8 36.8 35.8 45.6 38.1" stroke="white" stroke-width="3.1" stroke-linecap="round"/>
-  <path d="M23.2 34.7C23.2 29 27.1 24.4 32 24.4C36.9 24.4 40.8 29 40.8 34.7" stroke="white" stroke-width="3.6" stroke-linecap="round"/>
-  <path d="M32 18.2V14.5M24.1 21.2L21.5 18.6M19.5 30.1H15.8M39.9 21.2L42.5 18.6M44.5 30.1H48.2" stroke="white" stroke-width="3.6" stroke-linecap="round"/>
-  <defs>
-    <linearGradient id="fill" x1="10" y1="8" x2="56" y2="58" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#46D4CB"/>
-      <stop offset="0.56" stop-color="#1FBFAE"/>
-      <stop offset="1" stop-color="#0E9F93"/>
-    </linearGradient>
-  </defs>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <image href="./myday-icon-1024.png" width="1024" height="1024" preserveAspectRatio="xMidYMid meet"/>
 </svg>

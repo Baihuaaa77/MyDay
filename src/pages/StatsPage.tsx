@@ -64,6 +64,8 @@ function getXAxisInterval(pointCount: number): number {
  */
 const StatsPage: FC = () => {
   const [rangeId, setRangeId] = useState<StatsRangeId>("d30");
+  const [mobileChart, setMobileChart] = useState<"rating" | "completion">("rating");
+  const [mobileBackupOpen, setMobileBackupOpen] = useState<boolean>(false);
   const [dataRevision, setDataRevision] = useState<number>(0);
   const [allRecords, setAllRecords] = useState<Record<string, DayRecord>>({});
   const [dataError, setDataError] = useState<string | null>(null);
@@ -170,6 +172,180 @@ const StatsPage: FC = () => {
 
   return (
     <main className="page-shell">
+      <div className="lg:hidden">
+        <header className="mobile-workspace-header">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+                Performance view
+              </p>
+              <h1 className="mt-1 text-2xl font-bold text-slate-950">数据统计</h1>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
+              <BarChart3 className="h-6 w-6" aria-hidden />
+            </div>
+          </div>
+          {dataError !== null && (
+            <p className="mt-3 text-sm font-medium text-rose-600">{dataError}</p>
+          )}
+          <div
+            className="control-shell mt-4 grid grid-cols-2 gap-1"
+            role="group"
+            aria-label="统计时间范围"
+          >
+            {RANGE_OPTIONS.map((opt) => {
+              const isActive = rangeId === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setRangeId(opt.id)}
+                  className={`segmented-button w-full ${
+                    isActive ? "segmented-button-active" : "segmented-button-idle"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </header>
+
+        <section className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mobile-metric-tile">
+            <LineChart className="h-4 w-4 text-teal-600" aria-hidden />
+            <span>平均</span>
+            <strong>{averageRating === null ? "—" : averageRating}</strong>
+          </div>
+          <div className="mobile-metric-tile">
+            <CircleCheck className="h-4 w-4 text-emerald-600" aria-hidden />
+            <span>完成</span>
+            <strong>{totalCompletedTasks}</strong>
+          </div>
+          <div className="mobile-metric-tile">
+            <Award className="h-4 w-4 text-amber-600" aria-hidden />
+            <span>连续</span>
+            <strong>{longestStreak}</strong>
+          </div>
+        </section>
+
+        <section className="panel panel-glow-cool mt-4">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-950">
+                {mobileChart === "rating" ? "每日评分趋势" : "每日任务完成率"}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">{rangeLabel}</p>
+            </div>
+          </div>
+          <div className="control-shell mb-4 grid grid-cols-2 gap-1">
+            <button
+              type="button"
+              className={`segmented-button ${
+                mobileChart === "rating" ? "segmented-button-active" : "segmented-button-idle"
+              }`}
+              onClick={() => setMobileChart("rating")}
+            >
+              评分
+            </button>
+            <button
+              type="button"
+              className={`segmented-button ${
+                mobileChart === "completion" ? "segmented-button-active" : "segmented-button-idle"
+              }`}
+              onClick={() => setMobileChart("completion")}
+            >
+              完成率
+            </button>
+          </div>
+          <div className="h-60 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              {mobileChart === "rating" ? (
+                <AreaChart data={chartRows} margin={{ top: 8, right: 6, left: -8, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id={`${ratingAreaGradientId}Mobile`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2fc8c0" stopOpacity={0.34} />
+                      <stop offset="100%" stopColor="#2fc8c0" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#64748b" }} interval={xAxisInterval} />
+                  <YAxis domain={[0, 10]} tick={{ fontSize: 10, fill: "#64748b" }} width={28} />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(value) => {
+                      if (value == null || value === "") {
+                        return ["无评分", "评分"];
+                      }
+                      return [`${String(value)} 分`, "评分"];
+                    }}
+                    labelFormatter={(_, payload) => {
+                      const row = payload?.[0]?.payload as DailyChartRow | undefined;
+                      return row ? `日期 ${row.date}` : "";
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="rating"
+                    stroke="#0aa7ad"
+                    strokeWidth={2}
+                    fill={`url(#${ratingAreaGradientId}Mobile)`}
+                    dot={false}
+                    activeDot={{ r: 5, fill: "#0aa7ad", stroke: "#fff", strokeWidth: 2 }}
+                    connectNulls={false}
+                  />
+                </AreaChart>
+              ) : (
+                <BarChart data={chartRows} margin={{ top: 8, right: 6, left: -8, bottom: 0 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#64748b" }} interval={xAxisInterval} />
+                  <YAxis
+                    domain={[0, 100]}
+                    tick={{ fontSize: 10, fill: "#64748b" }}
+                    width={32}
+                    tickFormatter={(v) => `${v}%`}
+                  />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    formatter={(value) => [`${String(value)}%`, "完成率"]}
+                    labelFormatter={(_, payload) => {
+                      const row = payload?.[0]?.payload as DailyChartRow | undefined;
+                      return row ? `日期 ${row.date}` : "";
+                    }}
+                  />
+                  <Bar dataKey="completionRate" fill="#2fc8c0" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        <section className="panel panel-glow-warm mt-4">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-3 text-left"
+            onClick={() => setMobileBackupOpen((open) => !open)}
+            aria-expanded={mobileBackupOpen}
+          >
+            <span>
+              <span className="block text-base font-semibold text-slate-950">本地数据备份</span>
+              <span className="mt-1 block text-sm leading-5 text-slate-500">
+                手机、电脑各自本地保存，可用 JSON 手动迁移。
+              </span>
+            </span>
+            <span className="rounded-xl bg-slate-50 px-3 py-2 text-sm font-semibold text-teal-700">
+              {mobileBackupOpen ? "收起" : "打开"}
+            </span>
+          </button>
+          {mobileBackupOpen ? (
+            <div className="mt-4">
+              <DataBackupControls onImported={() => setDataRevision((prev) => prev + 1)} />
+            </div>
+          ) : null}
+        </section>
+      </div>
+
+      <div className="hidden lg:block">
       <header className="page-header">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
@@ -218,7 +394,7 @@ const StatsPage: FC = () => {
 
       {/* 三张指标卡：参考仪表盘样式——首行图标盒+标题，主数字深色、单位浅色同基线，末行说明小字 */}
       <section className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <div className="metric-card">
+        <div className="metric-card panel-glow-cool">
           <div className="flex items-center gap-3">
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50"
@@ -239,7 +415,7 @@ const StatsPage: FC = () => {
           <p className="mt-3 text-sm text-slate-400">{rangeLabel}内有评分的日期</p>
         </div>
 
-        <div className="metric-card">
+        <div className="metric-card panel-glow">
           <div className="flex items-center gap-3">
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50"
@@ -258,7 +434,7 @@ const StatsPage: FC = () => {
           <p className="mt-3 text-sm text-slate-400">{rangeLabel}累计勾选完成</p>
         </div>
 
-        <div className="metric-card">
+        <div className="metric-card panel-glow-warm">
           <div className="flex items-center gap-3">
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50"
@@ -280,7 +456,7 @@ const StatsPage: FC = () => {
 
       {/* 宽屏双列图表：评分折线 + 完成率柱状图 */}
       <div className="mt-6 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-6">
-        <section className="panel panel-interactive">
+        <section className="panel panel-glow-cool panel-interactive">
           <h2 className="section-title">
             {rangeLabel} · 每日评分趋势
           </h2>
@@ -289,8 +465,8 @@ const StatsPage: FC = () => {
               <AreaChart data={chartRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id={ratingAreaGradientId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.36} />
-                    <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#2fc8c0" stopOpacity={0.34} />
+                    <stop offset="100%" stopColor="#2fc8c0" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 {/* 仅水平虚线网格，浅色与需求文档一致 */}
@@ -325,11 +501,11 @@ const StatsPage: FC = () => {
                 <Area
                   type="monotone"
                   dataKey="rating"
-                  stroke="#0f766e"
+                  stroke="#0aa7ad"
                   strokeWidth={2}
                   fill={`url(#${ratingAreaGradientId})`}
                   dot={false}
-                  activeDot={{ r: 5, fill: "#0f766e", stroke: "#fff", strokeWidth: 2 }}
+                  activeDot={{ r: 5, fill: "#0aa7ad", stroke: "#fff", strokeWidth: 2 }}
                   connectNulls={false}
                 />
               </AreaChart>
@@ -337,7 +513,7 @@ const StatsPage: FC = () => {
           </div>
         </section>
 
-        <section className="panel panel-interactive">
+        <section className="panel panel-glow-warm panel-interactive">
           <h2 className="section-title">
             {rangeLabel} · 每日任务完成率
           </h2>
@@ -369,11 +545,12 @@ const StatsPage: FC = () => {
                   }}
                 />
                 {/* 柱状图与主色统一，避免高饱和绿 */}
-                <Bar dataKey="completionRate" fill="#14b8a6" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="completionRate" fill="#2fc8c0" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
+      </div>
       </div>
     </main>
   );

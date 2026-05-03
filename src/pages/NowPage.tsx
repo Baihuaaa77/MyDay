@@ -21,6 +21,7 @@ import StarRating from "../components/StarRating";
 import DailyNote from "../components/DailyNote";
 import QuoteOfTheDay from "../components/QuoteOfTheDay";
 import MoodPicker from "../components/MoodPicker";
+import MobileBottomSheet from "../components/MobileBottomSheet";
 
 type Focus = "yesterday" | "today" | "tomorrow";
 
@@ -37,6 +38,7 @@ function getDateStrForFocus(focus: Focus): string {
 
 const NowPage: FC = () => {
   const [focus, setFocus] = useState<Focus>("today");
+  const [mobileSheet, setMobileSheet] = useState<"mood" | "rating" | "note" | null>(null);
   const activeDateStr = useMemo(() => getDateStrForFocus(focus), [focus]);
 
   const {
@@ -110,8 +112,155 @@ const NowPage: FC = () => {
   const focusButtonClass = (isActive: boolean): string =>
     `segmented-button min-w-0 flex-1 ${isActive ? "segmented-button-active" : "segmented-button-idle"}`;
 
+  const taskCount = record?.tasks.length ?? 0;
+  const completedTaskCount = record?.tasks.filter((task) => task.completed).length ?? 0;
+  const moodLabel = record?.moodId ? "已记录" : "未选择";
+
   return (
     <main className="page-shell">
+      <div className="lg:hidden">
+        <header className="mobile-workspace-header">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+                {formatDisplayDate(activeDateStr)}
+              </p>
+              <h1 className="mt-1 text-2xl font-bold leading-tight text-slate-950">
+                {focusCopy.taskTitle}
+              </h1>
+            </div>
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-teal-700 shadow-sm">
+              <Sun className="h-6 w-6" aria-hidden />
+            </div>
+          </div>
+
+          <div
+            className="control-shell mt-4 grid grid-cols-3 gap-1"
+            role="tablist"
+            aria-label="选择昨天、今天或明天"
+          >
+            {(["yesterday", "today", "tomorrow"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                role="tab"
+                aria-selected={focus === item}
+                className={focusButtonClass(focus === item)}
+                onClick={() => setFocus(item)}
+              >
+                {item === "yesterday" ? "昨天" : item === "today" ? "今天" : "明天"}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              className="mobile-quick-tile"
+              onClick={() => setMobileSheet("mood")}
+            >
+              <SmilePlus className="h-4 w-4" aria-hidden />
+              <span>状态</span>
+              <strong>{moodLabel}</strong>
+            </button>
+            <button
+              type="button"
+              className="mobile-quick-tile"
+              onClick={() => setMobileSheet("rating")}
+            >
+              <Star className="h-4 w-4" aria-hidden />
+              <span>评分</span>
+              <strong>{ratingSummaryLabel}</strong>
+            </button>
+            <button
+              type="button"
+              className="mobile-quick-tile"
+              onClick={() => setMobileSheet("note")}
+            >
+              <NotebookText className="h-4 w-4" aria-hidden />
+              <span>记录</span>
+              <strong>{record?.note ? "已写" : "空白"}</strong>
+            </button>
+          </div>
+
+          {error !== null ? (
+            <p className="mt-3 text-sm font-medium text-rose-600">{error}</p>
+          ) : null}
+          {loading ? (
+            <p className="mt-3 text-sm font-medium text-slate-500">正在读取本地记录...</p>
+          ) : null}
+        </header>
+
+        <section className="mobile-task-flow mt-4">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-950">任务流</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                已完成 {completedTaskCount} / {taskCount} 项
+              </p>
+            </div>
+            <button type="button" className="btn-secondary min-h-10 py-2" onClick={() => setMobileSheet("note")}>
+              快记
+            </button>
+          </div>
+          <TaskList
+            tasks={record?.tasks ?? []}
+            onAddTask={addTask}
+            onToggleTask={toggleTask}
+            onDeleteTask={deleteTask}
+            emptyText={focusCopy.taskEmptyText}
+          />
+        </section>
+
+        <MobileBottomSheet
+          open={mobileSheet === "mood"}
+          title={focusCopy.moodTitle}
+          description={focusCopy.moodBody}
+          onClose={() => setMobileSheet(null)}
+        >
+          <MoodPicker
+            value={record?.moodId ?? null}
+            onChange={setMood}
+            emptyLabel={focusCopy.moodEmptyLabel}
+          />
+        </MobileBottomSheet>
+
+        <MobileBottomSheet
+          open={mobileSheet === "rating"}
+          title="自评"
+          description={focusCopy.ratingBody}
+          onClose={() => setMobileSheet(null)}
+        >
+          {isPlanningTomorrow ? (
+            <p className="rounded-2xl border border-amber-100 bg-amber-50/80 p-4 text-sm leading-6 text-slate-600">
+              未来日期暂不写入评分；到当天后即可补上自评。
+            </p>
+          ) : null}
+          <div className="mt-3 overflow-visible">
+            <StarRating
+              value={isPlanningTomorrow ? null : record?.rating ?? null}
+              onChange={isPlanningTomorrow ? undefined : setRating}
+              readOnly={isPlanningTomorrow}
+            />
+          </div>
+        </MobileBottomSheet>
+
+        <MobileBottomSheet
+          open={mobileSheet === "note"}
+          title={focusCopy.noteTitle}
+          description={focusCopy.noteBody}
+          onClose={() => setMobileSheet(null)}
+        >
+          <DailyNote
+            value={record?.note ?? ""}
+            onChange={setNote}
+            placeholder={focusCopy.notePlaceholder}
+            ariaLabel={focusCopy.noteTitle}
+          />
+        </MobileBottomSheet>
+      </div>
+
+      <div className="hidden lg:block">
       <header className="page-header">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
@@ -288,6 +437,7 @@ const NowPage: FC = () => {
             />
           </div>
         </section>
+      </div>
       </div>
     </main>
   );

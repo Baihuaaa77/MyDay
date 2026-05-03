@@ -1,7 +1,8 @@
-import { type ComponentType, type FC } from "react";
-import { BarChart3, CalendarDays, Sun } from "lucide-react";
+import { type FC } from "react";
+import { BarChart3, CalendarDays, type LucideIcon, Sun } from "lucide-react";
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import BrandLogo from "./components/BrandLogo";
+import InstallPrompt from "./components/InstallPrompt";
 import HistoryPage from "./pages/HistoryPage";
 import NowPage from "./pages/NowPage";
 import StatsPage from "./pages/StatsPage";
@@ -13,7 +14,7 @@ import StatsPage from "./pages/StatsPage";
 interface NavItem {
   to: string;
   label: string;
-  Icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  Icon: LucideIcon;
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
@@ -26,15 +27,15 @@ const App: FC = () => {
   const desktopNavLinkClass = ({ isActive }: { isActive: boolean }): string =>
     `flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 ${
       isActive
-        ? "bg-teal-600 text-white shadow-[0_10px_24px_rgba(13,148,136,0.2)]"
-        : "text-slate-500 hover:bg-white/70 hover:text-teal-800"
+        ? "bg-[#10aab2] text-white shadow-[0_10px_24px_rgba(8,167,162,0.2)]"
+        : "text-slate-500 hover:bg-white/70 hover:text-[#0b8f99]"
     }`;
 
   const mobileNavLinkClass = ({ isActive }: { isActive: boolean }): string =>
     `flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold transition-all duration-300 ${
       isActive
-        ? "bg-teal-600 text-white shadow-[0_12px_28px_rgba(13,148,136,0.18)]"
-        : "text-slate-500 hover:bg-slate-50 hover:text-teal-800"
+        ? "bg-[#10aab2] text-white shadow-[0_12px_28px_rgba(8,167,162,0.18)]"
+        : "text-slate-500 hover:bg-slate-50 hover:text-[#0b8f99]"
     }`;
 
   return (
@@ -74,6 +75,7 @@ const App: FC = () => {
           </NavLink>
         ))}
       </nav>
+      <InstallPrompt />
     </div>
   );
 };

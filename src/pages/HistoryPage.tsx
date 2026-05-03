@@ -28,6 +28,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import QuoteOfTheDay from "../components/QuoteOfTheDay";
 import MoodPicker from "../components/MoodPicker";
 import { getMoodById } from "../data/moods";
+import MobileBottomSheet from "../components/MobileBottomSheet";
 
 const WEEKDAY_HEADERS: readonly string[] = ["一", "二", "三", "四", "五", "六", "日"];
 
@@ -42,7 +43,7 @@ function getCalendarDayButtonClass(params: {
     "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border p-1 text-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500";
 
   if (isSelected) {
-    return `${base} z-10 border-teal-600 bg-teal-600 text-white shadow-md ring-2 ring-teal-200`;
+    return `${base} z-10 border-[#10aab2] bg-[#10aab2] text-white shadow-md ring-2 ring-cyan-200`;
   }
   if (!stored) {
     return `${base} border-transparent text-slate-500 hover:bg-slate-100`;
@@ -122,6 +123,7 @@ const HistoryPage: FC = () => {
   const [selectedDateStr, setSelectedDateStr] = useState<string | null>(() => todayStr);
   const [confirmedOldDateEdits, setConfirmedOldDateEdits] = useState<Record<string, boolean>>({});
   const [confirmOldEditOpen, setConfirmOldEditOpen] = useState<boolean>(false);
+  const [mobileDetailOpen, setMobileDetailOpen] = useState<boolean>(false);
   const [allRecords, setAllRecords] = useState<Record<string, DayRecord>>({});
   const [dataError, setDataError] = useState<string | null>(null);
 
@@ -191,6 +193,7 @@ const HistoryPage: FC = () => {
 
   const handlePickDay = (day: number): void => {
     setSelectedDateStr(formatDateString(year, monthIndex, day));
+    setMobileDetailOpen(true);
   };
 
   const handleConfirmOldEdit = (): void => {
@@ -202,7 +205,24 @@ const HistoryPage: FC = () => {
 
   return (
     <main className="page-shell">
-      <header className="page-header">
+      <header className="mobile-workspace-header lg:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-teal-700">
+              Timeline archive
+            </p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-950">历史记录</h1>
+          </div>
+          <div className="rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-sm font-semibold text-slate-600 shadow-sm">
+            {monthTitle}
+          </div>
+        </div>
+        {dataError !== null && (
+          <p className="mt-3 text-sm font-medium text-rose-600">{dataError}</p>
+        )}
+      </header>
+
+      <header className="page-header hidden lg:flex">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
             <div className="icon-tile">
@@ -223,7 +243,7 @@ const HistoryPage: FC = () => {
         </div>
       </header>
 
-      <div className="mt-8 flex flex-col gap-6 lg:grid lg:grid-cols-5 lg:gap-8">
+      <div className="mt-4 flex flex-col gap-6 lg:mt-8 lg:grid lg:grid-cols-5 lg:gap-8">
         <section className="panel panel-glow-cool panel-interactive lg:sticky lg:top-20 lg:col-span-2 lg:self-start">
           <div className="mb-6 flex items-center justify-between">
             <button
@@ -299,9 +319,20 @@ const HistoryPage: FC = () => {
               );
             })}
           </div>
+
+          {selectedDateStr !== null ? (
+            <button
+              type="button"
+              className="btn-primary mt-5 w-full lg:hidden"
+              onClick={() => setMobileDetailOpen(true)}
+            >
+              <Pencil className="h-5 w-5 shrink-0" aria-hidden />
+              查看 / 编辑 {formatDisplayDate(selectedDateStr)}
+            </button>
+          ) : null}
         </section>
 
-        <div className="min-w-0 lg:col-span-3">
+        <div className="hidden min-w-0 lg:col-span-3 lg:block">
           {selectedDateStr === null ? (
             <div className="panel flex flex-col items-center justify-center px-6 py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-teal-500 shadow-inner">
@@ -457,6 +488,90 @@ const HistoryPage: FC = () => {
         onConfirm={handleConfirmOldEdit}
         onCancel={() => setConfirmOldEditOpen(false)}
       />
+
+      <MobileBottomSheet
+        open={mobileDetailOpen && selectedDateStr !== null}
+        title={selectedDateStr === null ? "日期详情" : formatDisplayDate(selectedDateStr)}
+        description={
+          displayRecord
+            ? `已完成 ${taskCompleted} / ${taskTotal} 项任务`
+            : "选择日期后查看当天记录"
+        }
+        onClose={() => setMobileDetailOpen(false)}
+      >
+        {selectedDateStr === null || displayRecord === null ? (
+          <p className="panel-muted text-sm leading-6 text-slate-500">
+            在日历里选择一天，查看这一天的状态、评分、待办任务和记录。
+          </p>
+        ) : (
+          <div className="space-y-5">
+            {needsOldDateConfirm ? (
+              <button
+                type="button"
+                onClick={() => setConfirmOldEditOpen(true)}
+                className="btn-primary w-full"
+              >
+                <Pencil className="h-5 w-5 shrink-0" aria-hidden />
+                编辑此日记录
+              </button>
+            ) : null}
+
+            <section className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-4">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-5 w-5 text-teal-700" aria-hidden />
+                <h3 className="text-base font-semibold text-slate-950">状态与评分</h3>
+              </div>
+              <div className="mt-4">
+                <MoodPicker
+                  value={displayRecord.moodId}
+                  onChange={canEditSelectedDate ? setMood : undefined}
+                  readOnly={!canEditSelectedDate}
+                  emptyLabel="选一个代表这一天的状态吧"
+                />
+              </div>
+              <div className="mt-4 overflow-visible">
+                <StarRating
+                  value={isSelectedFuture ? null : displayRecord.rating}
+                  onChange={canEditSelectedDate && !isSelectedFuture ? setRating : undefined}
+                  readOnly={!canEditSelectedDate || isSelectedFuture}
+                />
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-3 flex items-center gap-2">
+                <ListChecks className="h-5 w-5 text-teal-700" aria-hidden />
+                <h3 className="text-base font-semibold text-slate-950">待办任务</h3>
+              </div>
+              {canEditSelectedDate ? (
+                <TaskList
+                  tasks={displayRecord.tasks}
+                  onAddTask={addTask}
+                  onToggleTask={toggleTask}
+                  onDeleteTask={deleteTask}
+                  emptyText="这一天还没有任务。可以补充一个当时的待办或结果。"
+                />
+              ) : (
+                <TaskSummaryList tasks={displayRecord.tasks} />
+              )}
+            </section>
+
+            <section>
+              <div className="mb-3 flex items-center gap-2">
+                <NotebookText className="h-5 w-5 text-teal-700" aria-hidden />
+                <h3 className="text-base font-semibold text-slate-950">当日记录</h3>
+              </div>
+              <DailyNote
+                value={displayRecord.note}
+                onChange={canEditSelectedDate ? setNote : undefined}
+                readOnly={!canEditSelectedDate}
+                placeholder="写下这一天想留下的内容"
+                ariaLabel="当日记录"
+              />
+            </section>
+          </div>
+        )}
+      </MobileBottomSheet>
     </main>
   );
 };
