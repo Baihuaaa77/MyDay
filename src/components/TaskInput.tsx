@@ -39,7 +39,7 @@ const TaskInput: FC<TaskInputProps> = ({
         className="input-field min-w-0 flex-1"
         aria-label="新任务标题"
       />
-      <button type="button" onClick={handleAdd} className="btn-primary">
+      <button type="button" onClick={handleAdd} className="btn-primary w-full sm:w-auto">
         <Plus className="h-5 w-5 shrink-0" aria-hidden />
         添加
       </button>

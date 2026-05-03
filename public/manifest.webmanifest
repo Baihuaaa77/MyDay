@@ -2,11 +2,15 @@
   "name": "MyDay",
   "short_name": "MyDay",
   "description": "轻量的每日计划、复盘和数据统计工具。",
-  "start_url": ".",
-  "scope": ".",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "orientation": "portrait-primary",
   "background_color": "#f8fafc",
   "theme_color": "#0f766e",
+  "categories": ["productivity", "lifestyle"],
   "icons": [
     {
       "src": "./myday-mark.svg",

@@ -190,7 +190,7 @@ const StatsPage: FC = () => {
         <div className="flex w-full flex-col gap-3 lg:w-auto lg:items-end">
           {/* 时间范围选择器：白底药丸按钮 */}
           <div
-            className="control-shell flex flex-wrap gap-1"
+            className="control-shell grid w-full grid-cols-2 gap-1 sm:flex sm:flex-wrap"
             role="group"
             aria-label="统计时间范围"
           >
@@ -201,7 +201,7 @@ const StatsPage: FC = () => {
                   key={opt.id}
                   type="button"
                   onClick={() => setRangeId(opt.id)}
-                  className={`segmented-button ${
+                  className={`segmented-button w-full sm:w-auto ${
                     isActive
                       ? "segmented-button-active"
                       : "segmented-button-idle"
@@ -284,7 +284,7 @@ const StatsPage: FC = () => {
           <h2 className="section-title">
             {rangeLabel} · 每日评分趋势
           </h2>
-          <div className="mt-6 h-72 w-full">
+          <div className="mt-6 h-64 w-full sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
@@ -341,7 +341,7 @@ const StatsPage: FC = () => {
           <h2 className="section-title">
             {rangeLabel} · 每日任务完成率
           </h2>
-          <div className="mt-6 h-72 w-full">
+          <div className="mt-6 h-64 w-full sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid

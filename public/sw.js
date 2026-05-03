@@ -1,4 +1,4 @@
-const CACHE_NAME = "myday-static-v1";
+const CACHE_NAME = "myday-static-v3";
 const CORE_ASSETS = ["./", "./manifest.webmanifest", "./myday-mark.svg"];
 
 self.addEventListener("install", (event) => {

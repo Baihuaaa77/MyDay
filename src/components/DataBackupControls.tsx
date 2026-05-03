@@ -49,8 +49,8 @@ const DataBackupControls: FC<DataBackupControlsProps> = ({ onImported }) => {
       setBusy(true);
       void importRecordsJson(String(reader.result ?? ""))
         .then((importedCount) => {
-        setMessage(`已导入 ${importedCount} 天记录。`);
-        onImported();
+          setMessage(`已导入 ${importedCount} 天记录。`);
+          onImported();
         })
         .catch(() => {
           setMessage("导入失败，请选择有效的 MyDay JSON 备份。");
@@ -64,8 +64,8 @@ const DataBackupControls: FC<DataBackupControlsProps> = ({ onImported }) => {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
+    <div className="flex w-full flex-col gap-2 sm:w-auto">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         <button type="button" className="btn-secondary" onClick={handleExport} disabled={busy}>
           <Download className="h-4 w-4 shrink-0" aria-hidden />
           导出数据

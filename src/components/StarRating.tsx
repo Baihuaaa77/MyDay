@@ -8,7 +8,7 @@ export interface StarRatingProps {
 }
 
 const STAR_COUNT = 10;
-const STAR_ICON_CLASS = "h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7";
+const STAR_ICON_CLASS = "star-rating-icon";
 
 const StarRating: FC<StarRatingProps> = ({ value, onChange, readOnly = false }) => {
   const handleSelect = (rating: number): void => {
@@ -20,7 +20,7 @@ const StarRating: FC<StarRatingProps> = ({ value, onChange, readOnly = false }) 
 
   return (
     <div
-      className="flex w-full min-w-[21rem] flex-nowrap items-center justify-between gap-0.5 rounded-2xl border border-slate-200/70 bg-slate-50/80 p-2 sm:min-w-0 sm:gap-1 sm:p-3"
+      className="star-rating-control mobile-fit-control"
       role={readOnly ? "img" : "radiogroup"}
       aria-label={readOnly ? `自评分数 ${value ?? "未评分"} 分` : "自评分数，1 到 10 分"}
     >
@@ -41,7 +41,7 @@ const StarRating: FC<StarRatingProps> = ({ value, onChange, readOnly = false }) 
 
         if (readOnly) {
           return (
-            <div key={score} className="flex shrink-0 justify-center p-0.5">
+            <div key={score} className="star-rating-button">
               {star}
             </div>
           );
@@ -55,7 +55,7 @@ const StarRating: FC<StarRatingProps> = ({ value, onChange, readOnly = false }) 
             aria-checked={value === score}
             aria-label={`${score} 分`}
             onClick={() => handleSelect(score)}
-            className="flex shrink-0 justify-center rounded-lg p-1 transition-all duration-300 hover:scale-110 hover:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1"
+            className="star-rating-button transition-all duration-300 hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-1"
           >
             {star}
           </button>

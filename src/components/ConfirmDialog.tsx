@@ -45,12 +45,12 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-4 py-4 backdrop-blur-sm sm:items-center sm:py-8"
       role="presentation"
       onClick={handleBackdropClick}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-white/80 bg-white/95 p-6 shadow-[0_30px_90px_rgba(15,23,42,0.28)] backdrop-blur-xl transition-all duration-300"
+        className="w-full max-w-md rounded-2xl border border-white/80 bg-white/95 p-5 shadow-[0_30px_90px_rgba(15,23,42,0.28)] backdrop-blur-xl transition-all duration-300 sm:p-6"
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
@@ -60,18 +60,18 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
           {title}
         </h2>
         <p className="mt-3 text-base leading-relaxed text-slate-600">{message}</p>
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={onCancel}
-            className="btn-secondary"
+            className="btn-secondary w-full sm:w-auto"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="btn-primary px-4 py-2"
+            className="btn-primary w-full px-4 py-2 sm:w-auto"
           >
             {confirmLabel}
           </button>

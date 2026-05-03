@@ -315,7 +315,7 @@ const HistoryPage: FC = () => {
             <section className="space-y-6">
               <div className="panel">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
+                  <div className="min-w-0">
                     <h2 className="text-2xl font-bold text-slate-950">
                       {formatDisplayDate(selectedDateStr)}
                     </h2>
@@ -343,7 +343,7 @@ const HistoryPage: FC = () => {
                   <div className="icon-tile">
                     <Sparkles className="h-5 w-5" aria-hidden />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="section-title">状态与评分</h3>
                     <p className="section-copy">
                       一眼查看这一天的状态，也能在这里调整评分。
@@ -373,7 +373,7 @@ const HistoryPage: FC = () => {
                           ? "点击星星选择分数，可随时修改。"
                           : "这一天的评分现在处于只读状态。"}
                     </p>
-                    <div className="mt-3 overflow-x-auto pb-1">
+                    <div className="mt-3 overflow-visible">
                       {isSelectedFuture ? (
                         <StarRating value={null} readOnly />
                       ) : (

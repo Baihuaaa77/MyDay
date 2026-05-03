@@ -108,7 +108,7 @@ const NowPage: FC = () => {
   }[focus];
 
   const focusButtonClass = (isActive: boolean): string =>
-    `segmented-button flex-1 ${isActive ? "segmented-button-active" : "segmented-button-idle"}`;
+    `segmented-button min-w-0 flex-1 ${isActive ? "segmented-button-active" : "segmented-button-idle"}`;
 
   return (
     <main className="page-shell">
@@ -118,7 +118,7 @@ const NowPage: FC = () => {
             <div className="icon-tile">
               <Sun className="h-5 w-5" aria-hidden />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="eyebrow">{focusCopy.eyebrow}</p>
               <h1 className="page-title">当下</h1>
             </div>
@@ -133,7 +133,7 @@ const NowPage: FC = () => {
         </div>
 
         <div
-          className="control-shell flex w-full max-w-md"
+          className="control-shell mobile-fit-control flex w-full min-w-0 max-w-md"
           role="tablist"
           aria-label="选择昨天、今天或明天"
         >
@@ -167,19 +167,19 @@ const NowPage: FC = () => {
         </div>
       </header>
 
-      <section className="panel panel-glow panel-interactive mt-6 overflow-visible p-0 sm:p-0">
-        <div className="grid gap-0 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)]">
-          <div className="flex flex-col justify-between border-b border-teal-100/80 bg-gradient-to-br from-teal-50 via-white to-amber-50/70 p-6 text-slate-900 lg:border-b-0 lg:border-r lg:border-teal-100/80 lg:p-8">
-            <div>
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-teal-200/80 bg-white/75 px-4 py-2 text-sm font-semibold text-teal-700 shadow-sm sm:text-base">
+      <section className="panel panel-glow panel-interactive mt-6 overflow-hidden p-0 sm:p-0">
+        <div className="grid min-w-0 max-w-full gap-0 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.35fr)]">
+          <div className="min-w-0 max-w-full rounded-t-2xl border-b border-teal-100/80 bg-gradient-to-br from-teal-50 via-white to-amber-50/70 p-4 text-slate-900 sm:p-6 lg:rounded-l-2xl lg:rounded-tr-none lg:border-b-0 lg:border-r lg:border-teal-100/80 lg:p-8">
+            <div className="min-w-0">
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-teal-200/80 bg-white/75 px-3 py-2 text-sm font-semibold text-teal-700 shadow-sm sm:gap-2.5 sm:px-4 sm:text-base">
                 <CalendarClock className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
                 {formatDisplayDate(activeDateStr)}
               </div>
-              <h2 className="mt-6 max-w-lg text-3xl font-bold leading-tight sm:text-4xl">
+              <h2 className="mt-4 max-w-lg text-2xl font-bold leading-tight sm:mt-6 sm:text-4xl">
                 {focusCopy.heroTitle}
               </h2>
             </div>
-            <div className="mt-8 flex items-center gap-3 text-sm font-medium text-slate-600">
+            <div className="mt-5 flex items-center gap-3 text-sm font-medium text-slate-600 sm:mt-8">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-amber-500 shadow-sm">
                 <Sparkles className="h-4 w-4" aria-hidden />
               </span>
@@ -187,7 +187,7 @@ const NowPage: FC = () => {
             </div>
           </div>
 
-          <div className="grid gap-6 p-6 sm:p-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)]">
+          <div className="grid min-w-0 max-w-full gap-5 p-4 sm:gap-6 sm:p-8 xl:grid-cols-[minmax(0,0.9fr)_minmax(22rem,1.1fr)]">
             <div>
               <div className="flex items-start gap-3">
                 <div className="icon-tile">
@@ -222,16 +222,16 @@ const NowPage: FC = () => {
                   <p className="mt-4 text-sm leading-6 text-slate-600">
                     未来日期暂不写入评分；到当天后即可补上自评。
                   </p>
-                  <div className="mt-4 overflow-x-auto pb-1">
+                  <div className="mt-4 overflow-visible">
                     <StarRating value={null} readOnly />
                   </div>
                 </>
               ) : (
-                <div className="mt-4 overflow-x-auto pb-1">
+                <div className="mt-4 overflow-visible">
                   <StarRating value={record?.rating ?? null} onChange={setRating} />
                 </div>
               )}
-              <div className="mt-3 flex items-center justify-between rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 shadow-inner">
+              <div className="mobile-fit-control mt-3 flex items-center justify-between rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 shadow-inner">
                 <span className="text-sm font-medium text-slate-600">当前分数</span>
                 <span className="flex items-baseline gap-1.5">
                   <span className="text-2xl font-bold leading-none text-slate-950">

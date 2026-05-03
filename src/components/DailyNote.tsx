@@ -28,8 +28,8 @@ const DailyNote: FC<DailyNoteProps> = ({
       rows={6}
       className={
         readOnly
-          ? "w-full resize-none rounded-xl border border-slate-200/70 bg-slate-50/80 px-4 py-3 text-base leading-relaxed text-slate-800"
-          : "input-field min-h-44 resize-y"
+          ? "w-full min-h-40 resize-none rounded-xl border border-slate-200/70 bg-slate-50/80 px-4 py-3 text-base leading-relaxed text-slate-800 sm:min-h-44"
+          : "input-field min-h-40 resize-none sm:min-h-44 sm:resize-y"
       }
       aria-label={ariaLabel}
     />

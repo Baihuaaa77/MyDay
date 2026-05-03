@@ -35,7 +35,7 @@ const QuoteOfTheDay: FC<QuoteOfTheDayProps> = ({ variant, className }) => {
 
   return (
     <p
-      className={`text-sm leading-6 text-slate-500 md:text-base ${className ?? ""}`}
+      className={`min-w-0 break-words text-sm leading-6 text-slate-500 md:text-base ${className ?? ""}`}
       aria-label={aria}
     >
       {`"${entry.text}"`}

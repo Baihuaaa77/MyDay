@@ -2,14 +2,21 @@ import { type FC } from "react";
 
 interface BrandLogoProps {
   className?: string;
+  compactOnMobile?: boolean;
 }
 
-const BrandLogo: FC<BrandLogoProps> = ({ className }) => {
+const BrandLogo: FC<BrandLogoProps> = ({ className, compactOnMobile = false }) => {
   return (
     <div className={`flex items-center gap-3 ${className ?? ""}`} aria-label="MyDay">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.35rem] bg-white shadow-[0_14px_30px_rgba(13,148,136,0.16)]">
+      <span
+        className={`flex shrink-0 items-center justify-center bg-white shadow-[0_14px_30px_rgba(13,148,136,0.16)] ${
+          compactOnMobile
+            ? "h-10 w-10 rounded-[1.1rem] lg:h-12 lg:w-12 lg:rounded-[1.35rem]"
+            : "h-12 w-12 rounded-[1.35rem]"
+        }`}
+      >
         <svg
-          className="h-12 w-12"
+          className={compactOnMobile ? "h-10 w-10 lg:h-12 lg:w-12" : "h-12 w-12"}
           viewBox="0 0 64 64"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -58,7 +65,11 @@ const BrandLogo: FC<BrandLogoProps> = ({ className }) => {
         </svg>
       </span>
       <div className="min-w-0">
-        <p className="text-[1.55rem] font-extrabold leading-none tracking-tight text-slate-800">
+        <p
+          className={`font-extrabold leading-none tracking-tight text-slate-800 ${
+            compactOnMobile ? "text-xl lg:text-[1.55rem]" : "text-[1.55rem]"
+          }`}
+        >
           MyDay
         </p>
       </div>
