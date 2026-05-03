@@ -1,6 +1,6 @@
-import { type FC } from "react";
+import { type FC, type TouchEvent, useMemo, useRef, useState } from "react";
 import { BarChart3, CalendarDays, type LucideIcon, Sun } from "lucide-react";
-import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import BrandLogo from "./components/BrandLogo";
 import InstallPrompt from "./components/InstallPrompt";
 import HistoryPage from "./pages/HistoryPage";
@@ -23,7 +23,20 @@ const NAV_ITEMS: readonly NavItem[] = [
   { to: "/stats", label: "统计", Icon: BarChart3 },
 ];
 
+const ROUTE_ORDER = NAV_ITEMS.map((item) => item.to);
+type RouteMotion = "idle" | "forward" | "back";
+
 const App: FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const [routeMotion, setRouteMotion] = useState<RouteMotion>("idle");
+  const activeRouteIndex = useMemo(() => {
+    const path = location.pathname === "/" || location.pathname === "/today" ? "/now" : location.pathname;
+    const index = ROUTE_ORDER.indexOf(path);
+    return index === -1 ? 0 : index;
+  }, [location.pathname]);
+
   const desktopNavLinkClass = ({ isActive }: { isActive: boolean }): string =>
     `flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-300 ${
       isActive
@@ -32,11 +45,53 @@ const App: FC = () => {
     }`;
 
   const mobileNavLinkClass = ({ isActive }: { isActive: boolean }): string =>
-    `flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold transition-all duration-300 ${
+    `mobile-nav-link flex min-h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-semibold transition-all duration-300 active:scale-[0.97] ${
       isActive
         ? "bg-[#10aab2] text-white shadow-[0_12px_28px_rgba(8,167,162,0.18)]"
         : "text-slate-500 hover:bg-slate-50 hover:text-[#0b8f99]"
     }`;
+
+  const handleTouchStart = (event: TouchEvent<HTMLDivElement>): void => {
+    const target = event.target as HTMLElement | null;
+    if (
+      target?.closest(
+        "button, a, input, textarea, select, [role='button'], [role='radio'], [data-swipe-lock='true']",
+      )
+    ) {
+      touchStartRef.current = null;
+      return;
+    }
+
+    const touch = event.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+  };
+
+  const handleTouchEnd = (event: TouchEvent<HTMLDivElement>): void => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (start === null || event.changedTouches.length === 0) {
+      return;
+    }
+
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    const elapsed = Date.now() - start.time;
+    const isHorizontalSwipe = Math.abs(dx) > 72 && Math.abs(dx) > Math.abs(dy) * 1.35 && elapsed < 700;
+    if (!isHorizontalSwipe) {
+      return;
+    }
+
+    const nextIndex = dx < 0 ? activeRouteIndex + 1 : activeRouteIndex - 1;
+    if (nextIndex < 0 || nextIndex >= ROUTE_ORDER.length) {
+      setRouteMotion(dx < 0 ? "forward" : "back");
+      window.setTimeout(() => setRouteMotion("idle"), 180);
+      return;
+    }
+
+    setRouteMotion(dx < 0 ? "forward" : "back");
+    navigate(ROUTE_ORDER[nextIndex]);
+  };
 
   return (
     // 全局暖灰浅底（slate-50）：让白卡片浮起，层次更清晰
@@ -59,13 +114,27 @@ const App: FC = () => {
         </div>
       </header>
 
-      <Routes>
-        <Route path="/" element={<Navigate to="/now" replace />} />
-        <Route path="/now" element={<NowPage />} />
-        <Route path="/today" element={<Navigate to="/now" replace />} />
-        <Route path="/history" element={<HistoryPage />} />
-        <Route path="/stats" element={<StatsPage />} />
-      </Routes>
+      <div className="mobile-swipe-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+        <div
+          key={location.pathname}
+          className={`route-stage ${
+            routeMotion === "forward"
+              ? "route-stage-forward"
+              : routeMotion === "back"
+                ? "route-stage-back"
+                : ""
+          }`}
+          onAnimationEnd={() => setRouteMotion("idle")}
+        >
+          <Routes location={location}>
+            <Route path="/" element={<Navigate to="/now" replace />} />
+            <Route path="/now" element={<NowPage />} />
+            <Route path="/today" element={<Navigate to="/now" replace />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/stats" element={<StatsPage />} />
+          </Routes>
+        </div>
+      </div>
 
       <nav className="mobile-bottom-nav lg:hidden" aria-label="移动端主导航">
         {NAV_ITEMS.map(({ to, label, Icon }) => (

@@ -21,7 +21,7 @@ const MobileBottomSheet: FC<MobileBottomSheetProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm lg:hidden">
+    <div className="mobile-sheet-backdrop lg:hidden" data-swipe-lock="true">
       <button
         type="button"
         className="absolute inset-0 h-full w-full cursor-default"
@@ -35,7 +35,7 @@ const MobileBottomSheet: FC<MobileBottomSheetProps> = ({
         aria-labelledby="mobile-sheet-title"
       >
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200" aria-hidden />
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex shrink-0 items-start justify-between gap-4">
           <div className="min-w-0">
             <h2 id="mobile-sheet-title" className="text-lg font-bold text-slate-950">
               {title}
@@ -48,7 +48,7 @@ const MobileBottomSheet: FC<MobileBottomSheetProps> = ({
             <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
-        <div className="mt-5 max-h-[62vh] overflow-y-auto pb-2 pr-1">{children}</div>
+        <div className="mobile-sheet-content">{children}</div>
       </section>
     </div>
   );

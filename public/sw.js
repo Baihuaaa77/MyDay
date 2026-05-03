@@ -1,7 +1,8 @@
-const CACHE_NAME = "myday-static-v5";
+const CACHE_NAME = "myday-static-v6";
 const CORE_ASSETS = [
   "./",
   "./manifest.webmanifest",
+  "./myday-icon-pwa.svg",
   "./myday-icon-1024.png",
 ];
 
