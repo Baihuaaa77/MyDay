@@ -25,6 +25,10 @@ function isIosSafariLike(): boolean {
   return isIos && isWebKit && !isOtherIosBrowser;
 }
 
+function isAndroidLike(): boolean {
+  return /Android/i.test(window.navigator.userAgent);
+}
+
 const InstallPrompt: FC = () => {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState<boolean>(() => {
@@ -37,6 +41,12 @@ const InstallPrompt: FC = () => {
       return false;
     }
     return isIosSafariLike();
+  }, []);
+  const showAndroidHint = useMemo(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return isAndroidLike();
   }, []);
 
   useEffect(() => {
@@ -59,7 +69,8 @@ const InstallPrompt: FC = () => {
     };
   }, []);
 
-  const shouldShow = !installed && !dismissed && (installEvent !== null || showIosHint);
+  const shouldShow =
+    !installed && !dismissed && (installEvent !== null || showIosHint || showAndroidHint);
 
   if (!shouldShow) {
     return null;
@@ -82,6 +93,13 @@ const InstallPrompt: FC = () => {
     });
   };
 
+  const hintText =
+    installEvent !== null
+      ? "安装后可像 App 一样打开；数据仍只保存在这台手机本地。"
+      : showIosHint
+        ? "在 Safari 中点分享按钮，再选择“添加到主屏幕”。数据仍只保存在这台手机本地。"
+        : "在 Android 浏览器菜单中选择“安装应用”或“添加到主屏幕”。数据仍只保存在这台手机本地。";
+
   return (
     <aside className="mobile-install-prompt lg:hidden" aria-label="安装 MyDay">
       <div className="flex min-w-0 items-start gap-3">
@@ -94,11 +112,7 @@ const InstallPrompt: FC = () => {
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-slate-950">把 MyDay 放到手机桌面</p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">
-            {installEvent
-              ? "安装后可像 App 一样打开；数据仍只保存在这台手机本地。"
-              : "在 Safari 中点分享按钮，再选择“添加到主屏幕”。数据仍只保存在这台手机本地。"}
-          </p>
+          <p className="mt-1 text-xs leading-5 text-slate-500">{hintText}</p>
         </div>
       </div>
       <div className="mt-3 flex items-center gap-2">

@@ -3,18 +3,43 @@
   "short_name": "MyDay",
   "description": "轻量的每日计划、复盘和数据统计工具。",
   "id": "./",
-  "start_url": "./",
+  "start_url": "./#/now",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
   "background_color": "#f8fafc",
   "theme_color": "#0f766e",
   "categories": ["productivity", "lifestyle"],
+  "prefer_related_applications": false,
   "icons": [
     {
+      "src": "./myday-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./myday-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./myday-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./myday-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "./myday-icon-1024.png",
-      "sizes": "1024x1024",
+      "sizes": "1024x1036",
       "type": "image/png",
       "purpose": "any"
     }

@@ -27,6 +27,8 @@ npm run build
 
 构建产物会输出到 `dist/`，可以部署到任意静态托管服务。项目使用相对资源路径和 Hash 路由，适合部署到 GitHub Pages、Vercel、Netlify 或任意子路径。
 
+Android 浏览器触发“安装应用 / 添加到主屏幕”通常要求生产环境 HTTPS 地址；用手机访问局域网里的 Vite 开发地址时，可能只能看到页面，不能触发原生安装提示。
+
 ## GitHub Pages 部署
 
 仓库包含 `.github/workflows/deploy.yml`。推送到 `main` 后，GitHub Actions 会自动构建并发布 `dist/`。
