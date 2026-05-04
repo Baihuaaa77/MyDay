@@ -1,19 +1,23 @@
-const CACHE_NAME = "myday-static-v9";
-const CORE_ASSETS = [
+const CACHE_NAME = "myday-static-dev";
+const PRECACHE_ASSETS = [
   "./",
+  "./index.html",
   "./manifest.webmanifest",
   "./myday-mark.svg",
   "./myday-icon-180.png",
   "./myday-icon-192.png",
   "./myday-icon-512.png",
-  "./myday-icon-1024.png",
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_ASSETS))
+      .then((cache) =>
+        cache.addAll(
+          PRECACHE_ASSETS.map((asset) => new Request(asset, { cache: "reload" })),
+        ),
+      )
       .then(() => self.skipWaiting()),
   );
 });
@@ -42,29 +46,33 @@ self.addEventListener("fetch", (event) => {
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put("./", copy));
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put("./", copy.clone());
+            cache.put("./index.html", copy);
+          });
           return response;
         })
-        .catch(() => caches.match("./")),
+        .catch(
+          async () =>
+            (await caches.match(request)) ??
+            (await caches.match("./index.html")) ??
+            caches.match("./"),
+        ),
     );
     return;
   }
 
   if (["style", "script", "worker", "image", "font", "manifest"].includes(request.destination)) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        const networkFetch = fetch(request)
-          .then((response) => {
-            if (response.ok) {
-              const copy = response.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-            }
-            return response;
-          })
-          .catch(() => cached);
-
-        return cached ?? networkFetch.then((response) => response ?? caches.match("./"));
-      }),
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(async () => (await caches.match(request)) ?? caches.match("./index.html")),
     );
   }
 });

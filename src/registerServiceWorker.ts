@@ -1,9 +1,22 @@
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
     const swUrl = `${import.meta.env.BASE_URL}sw.js`;
-    void navigator.serviceWorker.register(swUrl).catch((error: unknown) => {
-      console.warn("Service worker registration failed", error);
+    let refreshing = false;
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) {
+        return;
+      }
+      refreshing = true;
+      window.location.reload();
     });
+
+    void navigator.serviceWorker
+      .register(swUrl)
+      .then((registration) => registration.update())
+      .catch((error: unknown) => {
+        console.warn("Service worker registration failed", error);
+      });
   });
 } else if ("serviceWorker" in navigator && import.meta.env.DEV) {
   window.addEventListener("load", () => {

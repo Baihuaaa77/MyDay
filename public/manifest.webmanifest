@@ -3,7 +3,7 @@
   "short_name": "MyDay",
   "description": "轻量的每日计划、复盘和数据统计工具。",
   "id": "./",
-  "start_url": "./#/now",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
@@ -35,12 +35,6 @@
       "src": "./myday-mark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "./myday-icon-1024.png",
-      "sizes": "1024x1036",
-      "type": "image/png",
       "purpose": "any"
     }
   ]
