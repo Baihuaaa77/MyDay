@@ -1,16 +1,6 @@
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", () => {
     const swUrl = `${import.meta.env.BASE_URL}sw.js`;
-    let refreshing = false;
-
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (refreshing) {
-        return;
-      }
-      refreshing = true;
-      window.location.reload();
-    });
-
     void navigator.serviceWorker
       .register(swUrl)
       .then((registration) => registration.update())

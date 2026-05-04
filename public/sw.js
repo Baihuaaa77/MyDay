@@ -3,20 +3,25 @@ const PRECACHE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./myday-mark.svg",
   "./myday-icon-180.png",
   "./myday-icon-192.png",
   "./myday-icon-512.png",
 ];
+
+async function cacheAsset(cache, asset) {
+  const request = new Request(asset, { cache: "reload" });
+  const response = await fetch(request);
+  if (response.ok) {
+    await cache.put(asset, response);
+  }
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
       .then((cache) =>
-        cache.addAll(
-          PRECACHE_ASSETS.map((asset) => new Request(asset, { cache: "reload" })),
-        ),
+        Promise.all(PRECACHE_ASSETS.map((asset) => cacheAsset(cache, asset).catch(() => undefined))),
       )
       .then(() => self.skipWaiting()),
   );
@@ -56,7 +61,11 @@ self.addEventListener("fetch", (event) => {
           async () =>
             (await caches.match(request)) ??
             (await caches.match("./index.html")) ??
-            caches.match("./"),
+            (await caches.match("./")) ??
+            new Response("MyDay is offline and no cached page is available.", {
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8" },
+            }),
         ),
     );
     return;
@@ -72,7 +81,7 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(async () => (await caches.match(request)) ?? caches.match("./index.html")),
+        .catch(async () => (await caches.match(request)) ?? Response.error()),
     );
   }
 });
