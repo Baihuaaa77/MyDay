@@ -30,7 +30,7 @@ const TaskList: FC<TaskListProps> = ({
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[#10aab2] shadow-sm">
             <Inbox className="h-9 w-9" strokeWidth={1.25} aria-hidden />
           </div>
-          <p className="max-w-sm text-sm leading-6 text-slate-500">{emptyText}</p>
+          <p className="task-empty-copy">{emptyText}</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-3">

@@ -22,6 +22,7 @@ import DailyNote from "../components/DailyNote";
 import QuoteOfTheDay from "../components/QuoteOfTheDay";
 import MoodPicker from "../components/MoodPicker";
 import MobileBottomSheet from "../components/MobileBottomSheet";
+import { getMoodById } from "../data/moods";
 
 type Focus = "yesterday" | "today" | "tomorrow";
 
@@ -38,7 +39,7 @@ function getDateStrForFocus(focus: Focus): string {
 
 const NowPage: FC = () => {
   const [focus, setFocus] = useState<Focus>("today");
-  const [mobileSheet, setMobileSheet] = useState<"mood" | "rating" | "note" | null>(null);
+  const [mobileSheet, setMobileSheet] = useState<"mood" | "rating" | null>(null);
   const activeDateStr = useMemo(() => getDateStrForFocus(focus), [focus]);
 
   const {
@@ -114,7 +115,8 @@ const NowPage: FC = () => {
 
   const taskCount = record?.tasks.length ?? 0;
   const completedTaskCount = record?.tasks.filter((task) => task.completed).length ?? 0;
-  const moodLabel = record?.moodId ? "已记录" : "未选择";
+  const selectedMood = getMoodById(record?.moodId ?? null);
+  const moodLabel = selectedMood ? selectedMood.label : "未选择";
 
   return (
     <main className="page-shell">
@@ -153,7 +155,7 @@ const NowPage: FC = () => {
             ))}
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               type="button"
               className="mobile-quick-tile"
@@ -161,7 +163,14 @@ const NowPage: FC = () => {
             >
               <SmilePlus className="h-4 w-4" aria-hidden />
               <span>状态</span>
-              <strong>{moodLabel}</strong>
+              <strong className="flex items-center gap-1.5 text-[1.05rem]">
+                {selectedMood ? (
+                  <span className="text-lg leading-none" role="img" aria-label={selectedMood.label}>
+                    {selectedMood.emoji}
+                  </span>
+                ) : null}
+                <span className="min-w-0 truncate">{moodLabel}</span>
+              </strong>
             </button>
             <button
               type="button"
@@ -170,16 +179,18 @@ const NowPage: FC = () => {
             >
               <Star className="h-4 w-4" aria-hidden />
               <span>评分</span>
-              <strong>{ratingSummaryLabel}</strong>
-            </button>
-            <button
-              type="button"
-              className="mobile-quick-tile"
-              onClick={() => setMobileSheet("note")}
-            >
-              <NotebookText className="h-4 w-4" aria-hidden />
-              <span>记录</span>
-              <strong>{record?.note ? "已写" : "空白"}</strong>
+              <strong className="flex items-center gap-1.5 text-[1.05rem]">
+                {!isPlanningTomorrow && currentRating !== null ? (
+                  <span className="text-base leading-none" role="img" aria-label="星星">
+                    ⭐
+                  </span>
+                ) : null}
+                <span className="min-w-0 truncate">
+                  {!isPlanningTomorrow && currentRating !== null
+                    ? `${currentRating}/10`
+                    : ratingSummaryLabel}
+                </span>
+              </strong>
             </button>
           </div>
 
@@ -199,9 +210,6 @@ const NowPage: FC = () => {
                 已完成 {completedTaskCount} / {taskCount} 项
               </p>
             </div>
-            <button type="button" className="btn-secondary min-h-10 py-2" onClick={() => setMobileSheet("note")}>
-              快记
-            </button>
           </div>
           <TaskList
             tasks={record?.tasks ?? []}
@@ -209,6 +217,24 @@ const NowPage: FC = () => {
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
             emptyText={focusCopy.taskEmptyText}
+          />
+        </section>
+
+        <section className="mobile-note-panel mt-4">
+          <div className="mb-4 flex items-start gap-3">
+            <div className="icon-tile">
+              <NotebookText className="h-5 w-5" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-slate-950">{focusCopy.noteTitle}</h2>
+              <p className="mt-1 text-sm leading-5 text-slate-500">{focusCopy.noteBody}</p>
+            </div>
+          </div>
+          <DailyNote
+            value={record?.note ?? ""}
+            onChange={setNote}
+            placeholder={focusCopy.notePlaceholder}
+            ariaLabel={focusCopy.noteTitle}
           />
         </section>
 
@@ -245,19 +271,6 @@ const NowPage: FC = () => {
           </div>
         </MobileBottomSheet>
 
-        <MobileBottomSheet
-          open={mobileSheet === "note"}
-          title={focusCopy.noteTitle}
-          description={focusCopy.noteBody}
-          onClose={() => setMobileSheet(null)}
-        >
-          <DailyNote
-            value={record?.note ?? ""}
-            onChange={setNote}
-            placeholder={focusCopy.notePlaceholder}
-            ariaLabel={focusCopy.noteTitle}
-          />
-        </MobileBottomSheet>
       </div>
 
       <div className="hidden lg:block">

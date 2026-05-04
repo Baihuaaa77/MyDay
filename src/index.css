@@ -353,6 +353,14 @@
     @apply rounded-xl border border-slate-200/70 bg-slate-50/80 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:shadow-md;
   }
 
+  .task-empty-copy {
+    @apply max-w-sm overflow-visible text-sm text-slate-500;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+    word-break: normal;
+    text-wrap: pretty;
+  }
+
   .star-rating-control {
     @apply grid w-full min-w-0 max-w-full items-center gap-1 rounded-2xl border border-slate-200/70 bg-slate-50/80 p-2;
     width: min(100%, calc(100vw - 3.5rem));
@@ -423,6 +431,10 @@
   }
 
   .mobile-task-flow {
+    @apply rounded-2xl border border-white/75 bg-white/90 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-xl;
+  }
+
+  .mobile-note-panel {
     @apply rounded-2xl border border-white/75 bg-white/90 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur-xl;
   }
 
