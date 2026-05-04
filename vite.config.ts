@@ -34,7 +34,14 @@ function mydayServiceWorkerPlugin() {
       const distDir = resolve(__dirname, "dist");
       const serviceWorkerPath = resolve(distDir, "sw.js");
       const assets = Array.from(new Set(["./", ...collectPrecacheAssets(distDir)])).sort();
-      const version = createHash("sha256").update(assets.join("|")).digest("hex").slice(0, 12);
+      const versionHash = createHash("sha256");
+      assets.forEach((asset) => {
+        versionHash.update(asset);
+        if (asset !== "./") {
+          versionHash.update(readFileSync(resolve(distDir, asset.replace(/^\.\//, ""))));
+        }
+      });
+      const version = versionHash.digest("hex").slice(0, 12);
       const source = readFileSync(serviceWorkerPath, "utf8")
         .replace(/const CACHE_NAME = ".*?";/, `const CACHE_NAME = "myday-static-${version}";`)
         .replace(
