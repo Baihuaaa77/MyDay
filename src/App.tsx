@@ -3,6 +3,7 @@ import { BarChart3, CalendarDays, type LucideIcon, Sun } from "lucide-react";
 import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import BrandLogo from "./components/BrandLogo";
 import InstallPrompt from "./components/InstallPrompt";
+import IntroSplash from "./components/IntroSplash";
 import HistoryPage from "./pages/HistoryPage";
 import NowPage from "./pages/NowPage";
 import StatsPage from "./pages/StatsPage";
@@ -96,6 +97,8 @@ const App: FC = () => {
   return (
     // 全局暖灰浅底（slate-50）：让白卡片浮起，层次更清晰
     <div className="app-shell">
+      <IntroSplash />
+
       {/* 毛玻璃效果导航栏：半透明白底 + 背景模糊 */}
       <header className="relative z-20 border-b border-white/70 bg-white/85 shadow-[0_10px_35px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all duration-300 lg:sticky lg:top-0">
         <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-2 px-3 py-2 sm:px-6 lg:flex-row lg:items-center lg:px-8 lg:py-0">

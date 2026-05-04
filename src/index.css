@@ -1,4 +1,4 @@
-/* Tailwind 三层指令：基础样式、组件层、工具类（按需生成最终 CSS） */
+﻿/* Tailwind 三层指令：基础样式、组件层、工具类（按需生成最终 CSS） */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -99,6 +99,121 @@
   .app-shell > * {
     @apply relative;
     z-index: 1;
+  }
+
+  .intro-splash {
+    @apply fixed inset-0 z-[60] flex items-center justify-center overflow-hidden px-8 text-slate-950;
+    background:
+      radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.96), transparent 17rem),
+      radial-gradient(circle at 82% 18%, rgba(125, 211, 252, 0.28), transparent 19rem),
+      radial-gradient(circle at 20% 86%, rgba(251, 191, 36, 0.16), transparent 18rem),
+      linear-gradient(135deg, #e7f5f7 0%, #f7fbfc 48%, #f8f5ee 100%);
+    animation: introSplashOut 3000ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .intro-splash::before,
+  .intro-splash::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0;
+  }
+
+  .intro-splash::before {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.16)),
+      repeating-linear-gradient(
+        108deg,
+        transparent 0,
+        transparent 22px,
+        rgba(255, 255, 255, 0.34) 23px,
+        rgba(255, 255, 255, 0.34) 24px,
+        transparent 25px,
+        transparent 52px
+      );
+    backdrop-filter: blur(20px) saturate(1.14);
+  }
+
+  .intro-splash::after {
+    background:
+      radial-gradient(circle at 50% 50%, transparent 0, transparent 10rem, rgba(15, 23, 42, 0.05) 32rem),
+      repeating-linear-gradient(
+        104deg,
+        transparent 0,
+        transparent 72px,
+        rgba(14, 116, 144, 0.06) 73px,
+        transparent 76px,
+        transparent 142px
+      );
+    opacity: 0.72;
+  }
+
+  .intro-splash-mark {
+    @apply absolute h-56 w-56 rounded-full border border-white/80 bg-white/45 shadow-[0_26px_90px_rgba(15,23,42,0.08)] sm:h-72 sm:w-72 lg:h-[28rem] lg:w-[28rem];
+    animation: introHaloIn 3000ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .intro-splash-content {
+    @apply relative z-10 flex flex-col items-center justify-center text-center;
+    animation: introContentIn 3000ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .intro-logo-wrap {
+    @apply flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.65rem] shadow-[0_24px_70px_rgba(8,167,162,0.22)] ring-1 ring-white/80 sm:h-32 sm:w-32 sm:rounded-[2rem];
+    animation: introLogoPop 3000ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .intro-logo {
+    @apply h-full w-full;
+  }
+
+  .intro-copy {
+    @apply mt-5 min-w-0;
+  }
+
+  .intro-brand {
+    @apply text-[2.85rem] font-extrabold leading-none tracking-tight text-slate-900 sm:text-6xl;
+    text-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+  }
+
+  .intro-tagline {
+    @apply mt-3 text-base font-semibold leading-6 text-slate-500 sm:text-xl;
+  }
+
+  .intro-progress {
+    @apply absolute bottom-[calc(2.25rem+env(safe-area-inset-bottom))] left-1/2 z-10 h-1 w-28 -translate-x-1/2 overflow-hidden rounded-full bg-white/70 shadow-inner sm:w-40;
+  }
+
+  .intro-progress::after {
+    content: "";
+    @apply block h-full rounded-full bg-[#10aab2];
+    transform-origin: left;
+    animation: introProgress 3000ms ease-out forwards;
+  }
+
+  @media (min-width: 1024px) {
+    .intro-splash {
+      @apply justify-center px-16;
+    }
+
+    .intro-splash-content {
+      @apply flex-row gap-8 text-left;
+    }
+
+    .intro-logo-wrap {
+      @apply h-36 w-36 rounded-[2.3rem];
+    }
+
+    .intro-copy {
+      @apply mt-0;
+    }
+
+    .intro-brand {
+      @apply text-7xl;
+      letter-spacing: 0;
+    }
+
+    .intro-tagline {
+      @apply mt-4 text-2xl;
+    }
   }
 
   .page-shell {
@@ -370,6 +485,77 @@
   }
 }
 
+@keyframes introSplashOut {
+  0% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes introContentIn {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  16% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  72% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.985);
+  }
+}
+
+@keyframes introLogoPop {
+  0% {
+    transform: scale(0.82) rotate(-4deg);
+  }
+  18% {
+    transform: scale(1.04) rotate(0deg);
+  }
+  30% {
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes introHaloIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  24% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes introProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @keyframes mobileSheetIn {
   from {
     opacity: 0;
@@ -407,7 +593,12 @@
   .route-stage-forward,
   .route-stage-back,
   .mobile-sheet,
-  .mobile-sheet-backdrop {
+  .mobile-sheet-backdrop,
+  .intro-splash,
+  .intro-splash-content,
+  .intro-logo-wrap,
+  .intro-splash-mark,
+  .intro-progress::after {
     animation: none;
   }
 
@@ -421,3 +612,5 @@
     transition-duration: 1ms;
   }
 }
+
+
