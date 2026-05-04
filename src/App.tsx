@@ -97,9 +97,17 @@ const App: FC = () => {
     // 全局暖灰浅底（slate-50）：让白卡片浮起，层次更清晰
     <div className="app-shell">
       {/* 毛玻璃效果导航栏：半透明白底 + 背景模糊 */}
-      <header className="sticky top-0 z-20 border-b border-white/70 bg-white/85 shadow-[0_10px_35px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all duration-300">
-        <div className="mx-auto flex w-full max-w-screen-2xl items-center px-4 sm:px-6 lg:px-8">
-          <BrandLogo className="flex shrink-0 py-2.5 lg:pr-8" compactOnMobile />
+      <header className="relative z-20 border-b border-white/70 bg-white/85 shadow-[0_10px_35px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all duration-300 lg:sticky lg:top-0">
+        <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-2 px-3 py-2 sm:px-6 lg:flex-row lg:items-center lg:px-8 lg:py-0">
+          <BrandLogo className="flex shrink-0 lg:py-2.5 lg:pr-8" compactOnMobile />
+          <nav className="mobile-top-nav lg:hidden" aria-label="移动端主导航">
+            {NAV_ITEMS.map(({ to, label, Icon }) => (
+              <NavLink key={to} to={to} className={mobileNavLinkClass}>
+                <Icon className="h-5 w-5 shrink-0" aria-hidden />
+                <span>{label}</span>
+              </NavLink>
+            ))}
+          </nav>
           <nav
             className="hidden flex-1 items-center justify-center gap-2 lg:flex"
             aria-label="主导航"
@@ -136,14 +144,6 @@ const App: FC = () => {
         </div>
       </div>
 
-      <nav className="mobile-bottom-nav lg:hidden" aria-label="移动端主导航">
-        {NAV_ITEMS.map(({ to, label, Icon }) => (
-          <NavLink key={to} to={to} className={mobileNavLinkClass}>
-            <Icon className="h-5 w-5 shrink-0" aria-hidden />
-            <span>{label}</span>
-          </NavLink>
-        ))}
-      </nav>
       <InstallPrompt />
     </div>
   );
