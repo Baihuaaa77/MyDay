@@ -17,6 +17,9 @@ export interface DayRecordEditor {
   reloadRecord: () => void;
   addTask: (title: string) => void;
   toggleTask: (id: string) => void;
+  updateTaskTitle: (id: string, title: string) => void;
+  pinTask: (id: string) => void;
+  reorderTasks: (activeId: string, overId: string) => void;
   deleteTask: (id: string) => void;
   setRating: (rating: number) => void;
   setNote: (note: string) => void;
@@ -128,6 +131,56 @@ export function useDayRecordEditor(date: string | null): DayRecordEditor {
     }));
   };
 
+  const updateTaskTitle = (id: string, title: string): void => {
+    const trimmedTitle = title.trim();
+    if (trimmedTitle === "") {
+      return;
+    }
+
+    updateRecord((current) => ({
+      ...current,
+      tasks: current.tasks.map((task) =>
+        task.id === id ? { ...task, title: trimmedTitle } : task,
+      ),
+    }));
+  };
+
+  const reorderTasks = (activeId: string, overId: string): void => {
+    if (activeId === overId) {
+      return;
+    }
+
+    updateRecord((current) => {
+      const fromIndex = current.tasks.findIndex((task) => task.id === activeId);
+      const toIndex = current.tasks.findIndex((task) => task.id === overId);
+
+      if (fromIndex === -1 || toIndex === -1) {
+        return current;
+      }
+
+      const tasks = [...current.tasks];
+      const [movedTask] = tasks.splice(fromIndex, 1);
+      tasks.splice(toIndex, 0, movedTask);
+
+      return { ...current, tasks };
+    });
+  };
+
+  const pinTask = (id: string): void => {
+    updateRecord((current) => {
+      const taskIndex = current.tasks.findIndex((task) => task.id === id);
+      if (taskIndex <= 0) {
+        return current;
+      }
+
+      const tasks = [...current.tasks];
+      const [pinnedTask] = tasks.splice(taskIndex, 1);
+      tasks.unshift(pinnedTask);
+
+      return { ...current, tasks };
+    });
+  };
+
   const deleteTask = (id: string): void => {
     updateRecord((current) => ({
       ...current,
@@ -157,6 +210,9 @@ export function useDayRecordEditor(date: string | null): DayRecordEditor {
     reloadRecord,
     addTask,
     toggleTask,
+    updateTaskTitle,
+    pinTask,
+    reorderTasks,
     deleteTask,
     setRating,
     setNote,

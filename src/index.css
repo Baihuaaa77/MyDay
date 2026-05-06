@@ -353,6 +353,34 @@
     @apply rounded-xl border border-slate-200/70 bg-slate-50/80 transition-all duration-300 hover:border-slate-300 hover:bg-white hover:shadow-md;
   }
 
+  .task-sort-row {
+    @apply min-w-0 rounded-xl transition-transform duration-200;
+  }
+
+  .task-sort-row-dragging {
+    @apply scale-[0.99] opacity-80;
+  }
+
+  .task-sort-row-over {
+    @apply ring-2 ring-cyan-300 ring-offset-2 ring-offset-white;
+  }
+
+  .task-item-shell {
+    @apply flex min-h-14 min-w-0 items-center gap-1.5 px-2 py-2.5 sm:gap-2 sm:px-3 sm:py-3;
+  }
+
+  .task-drag-handle {
+    @apply flex h-10 w-8 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-slate-300 transition active:cursor-grabbing active:bg-cyan-50 active:text-[#0b8f99] hover:bg-slate-100 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 sm:w-10;
+  }
+
+  .task-icon-action {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition focus:outline-none focus:ring-2;
+  }
+
+  .task-edit-input {
+    @apply min-h-10 min-w-0 flex-1 rounded-lg border border-cyan-200 bg-white px-3 py-2 text-base leading-relaxed text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100;
+  }
+
   .task-empty-copy {
     @apply max-w-sm overflow-visible text-sm text-slate-500;
     line-height: 1.75;

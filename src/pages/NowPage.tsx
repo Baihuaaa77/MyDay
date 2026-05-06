@@ -48,6 +48,9 @@ const NowPage: FC = () => {
     error,
     addTask,
     toggleTask,
+    updateTaskTitle,
+    pinTask,
+    reorderTasks,
     deleteTask,
     setRating,
     setNote,
@@ -215,6 +218,9 @@ const NowPage: FC = () => {
             tasks={record?.tasks ?? []}
             onAddTask={addTask}
             onToggleTask={toggleTask}
+            onUpdateTaskTitle={updateTaskTitle}
+            onPinTask={pinTask}
+            onReorderTasks={reorderTasks}
             onDeleteTask={deleteTask}
             emptyText={focusCopy.taskEmptyText}
           />
@@ -425,6 +431,9 @@ const NowPage: FC = () => {
               tasks={record?.tasks ?? []}
               onAddTask={addTask}
               onToggleTask={toggleTask}
+              onUpdateTaskTitle={updateTaskTitle}
+              onPinTask={pinTask}
+              onReorderTasks={reorderTasks}
               onDeleteTask={deleteTask}
               emptyText={focusCopy.taskEmptyText}
             />

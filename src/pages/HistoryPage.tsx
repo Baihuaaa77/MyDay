@@ -131,6 +131,9 @@ const HistoryPage: FC = () => {
     record,
     addTask,
     toggleTask,
+    updateTaskTitle,
+    pinTask,
+    reorderTasks,
     deleteTask,
     setRating,
     setNote,
@@ -440,6 +443,9 @@ const HistoryPage: FC = () => {
                         tasks={displayRecord.tasks}
                         onAddTask={addTask}
                         onToggleTask={toggleTask}
+                        onUpdateTaskTitle={updateTaskTitle}
+                        onPinTask={pinTask}
+                        onReorderTasks={reorderTasks}
                         onDeleteTask={deleteTask}
                         emptyText="这一天还没有任务。可以补充一个当时的待办或结果。"
                       />
@@ -548,6 +554,9 @@ const HistoryPage: FC = () => {
                   tasks={displayRecord.tasks}
                   onAddTask={addTask}
                   onToggleTask={toggleTask}
+                  onUpdateTaskTitle={updateTaskTitle}
+                  onPinTask={pinTask}
+                  onReorderTasks={reorderTasks}
                   onDeleteTask={deleteTask}
                   emptyText="这一天还没有任务。可以补充一个当时的待办或结果。"
                 />
