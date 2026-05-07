@@ -1,5 +1,5 @@
 import type { DayRecord } from "../types";
-import { addCalendarDays, compareDateStrings, getTodayString } from "../utils/dateUtils";
+import { addCalendarDays, getTodayString } from "../utils/dateUtils";
 
 const DB_NAME = "myday-db";
 const DB_VERSION = 1;
@@ -12,6 +12,7 @@ function createEmptyRecord(date: string): DayRecord {
   return {
     date,
     tasks: [],
+    carryoverCheckedDates: [],
     rating: null,
     note: "",
     moodId: null,
@@ -65,9 +66,17 @@ function normalizeRecord(dateKey: string, value: unknown): DayRecord | null {
       })
     : [];
 
+  const carryoverCheckedDates = Array.isArray(value.carryoverCheckedDates)
+    ? value.carryoverCheckedDates.filter(
+        (dateValue): dateValue is string =>
+          typeof dateValue === "string" && DATE_KEY_PATTERN.test(dateValue),
+      )
+    : [];
+
   return {
     date: dateKey,
     tasks,
+    carryoverCheckedDates,
     rating: normalizeRating(value.rating),
     note: typeof value.note === "string" ? value.note : "",
     moodId: typeof value.moodId === "string" ? value.moodId : null,
@@ -175,41 +184,42 @@ function createCarryoverTask(sourceDate: string, sourceTask: DayRecord["tasks"][
   };
 }
 
-async function ensureCarryoverForDate(date: string, records: Record<string, DayRecord>): Promise<DayRecord> {
+async function ensureTodayCarryover(date: string, records: Record<string, DayRecord>): Promise<DayRecord> {
+  const today = getTodayString();
   const targetRecord = records[date] ?? createEmptyRecord(date);
-  const previousDate = addCalendarDays(date, -1);
 
-  if (compareDateStrings(previousDate, getTodayString()) >= 0) {
+  if (date !== today) {
     return targetRecord;
+  }
+
+  const previousDate = addCalendarDays(today, -1);
+  const checkedDates = targetRecord.carryoverCheckedDates ?? [];
+  if (checkedDates.includes(previousDate)) {
+    return targetRecord;
+  }
+
+  const nextCheckedDates = [...checkedDates, previousDate];
+  if (records[date] !== undefined) {
+    const nextRecord = { ...targetRecord, carryoverCheckedDates: nextCheckedDates };
+    records[date] = nextRecord;
+    await saveRecord(nextRecord);
+    return nextRecord;
   }
 
   const previousRecord = records[previousDate];
-  if (previousRecord === undefined) {
-    return targetRecord;
-  }
-
-  const existingCarryoverKeys = new Set(
-    targetRecord.tasks
-      .filter((task) => task.carryoverFromDate === previousDate)
-      .map((task) => task.carryoverFromTaskId)
-      .filter((taskId): taskId is string => typeof taskId === "string"),
-  );
-  const carryoverTasks = previousRecord.tasks
-    .filter((task) => !task.completed)
-    .filter((task) => !existingCarryoverKeys.has(task.id))
-    .map((task) => createCarryoverTask(previousDate, task));
-
-  if (carryoverTasks.length === 0) {
-    return targetRecord;
-  }
+  const carryoverTasks =
+    previousRecord?.tasks
+      .filter((task) => !task.completed)
+      .map((task) => createCarryoverTask(previousDate, task)) ?? [];
 
   const nextRecord = {
     ...targetRecord,
+    carryoverCheckedDates: nextCheckedDates,
     tasks: [...carryoverTasks, ...targetRecord.tasks],
   };
+
   records[date] = nextRecord;
   await saveRecord(nextRecord);
-
   return nextRecord;
 }
 
@@ -234,7 +244,7 @@ export async function getAllRecords(): Promise<Record<string, DayRecord>> {
 
 export async function getRecord(date: string): Promise<DayRecord> {
   const all = await getAllRecords();
-  return ensureCarryoverForDate(date, all);
+  return ensureTodayCarryover(date, all);
 }
 
 export async function saveRecord(record: DayRecord): Promise<void> {

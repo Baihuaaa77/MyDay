@@ -25,6 +25,8 @@ export interface DayRecord {
   date: string;
   /** 当天的任务列表 */
   tasks: Task[];
+  /** 已经执行过自动结转检查的来源日期，避免删除结转任务后再次出现 */
+  carryoverCheckedDates?: string[];
   /** 自评分数 1～10（与 StarRating 一致），未评分时为 null */
   rating: number | null;
   /** 今日记录（备注），可为空字符串 */
