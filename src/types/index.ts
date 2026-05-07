@@ -13,6 +13,10 @@ export interface Task {
   completed: boolean;
   /** 创建时间的 ISO 字符串 */
   createdAt: string;
+  /** 从哪一天自动结转而来；普通手动任务为空 */
+  carryoverFromDate?: string;
+  /** 从哪条任务自动结转而来；用于避免重复结转 */
+  carryoverFromTaskId?: string;
 }
 
 /** 每日记录（以 date 为主键的一条「当天快照」） */

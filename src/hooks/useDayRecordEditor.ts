@@ -123,12 +123,25 @@ export function useDayRecordEditor(date: string | null): DayRecordEditor {
   };
 
   const toggleTask = (id: string): void => {
-    updateRecord((current) => ({
-      ...current,
-      tasks: current.tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task,
-      ),
-    }));
+    updateRecord((current) => {
+      const taskIndex = current.tasks.findIndex((task) => task.id === id);
+      if (taskIndex === -1) {
+        return current;
+      }
+
+      const task = current.tasks[taskIndex];
+      const updatedTask = { ...task, completed: !task.completed };
+      const tasks = [...current.tasks];
+      tasks.splice(taskIndex, 1);
+
+      if (updatedTask.completed) {
+        tasks.push(updatedTask);
+      } else {
+        tasks.splice(taskIndex, 0, updatedTask);
+      }
+
+      return { ...current, tasks };
+    });
   };
 
   const updateTaskTitle = (id: string, title: string): void => {
