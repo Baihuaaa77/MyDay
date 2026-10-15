@@ -1,54 +1,53 @@
 import type { DayRecord } from "../types";
+import { addCalendarDays } from "./dateUtils";
 
 /**
- * 「打卡」判定：当天记录里至少有一项实质内容（任务、评分或备注），
- * 用于计算最长连续打卡天数。
+ * 「打卡」判定：当天留下了用户主动产生的内容——评分、状态、备注、
+ * 完成过任务，或手动添加过任务。只有自动结转进来却没动过的任务不算。
  */
-export function isCheckinRecord(record: DayRecord): boolean {
+export function isCheckinRecord(record: DayRecord | undefined): boolean {
+  if (record === undefined) {
+    return false;
+  }
   return (
-    record.tasks.length > 0 ||
     record.rating !== null ||
-    record.note.trim() !== ""
+    record.moodId !== null ||
+    record.note.trim() !== "" ||
+    record.tasks.some((task) => task.completed || task.carryoverFromTaskId === undefined)
   );
 }
 
-/**
- * 判断 next 是否为 prev 的日历下一天（按本地时区解析 YYYY-MM-DD）。
- */
-function isConsecutiveCalendarDays(prev: string, next: string): boolean {
-  const [y1, m1, d1] = prev.split("-").map(Number);
-  const [y2, m2, d2] = next.split("-").map(Number);
-  const a = new Date(y1, m1 - 1, d1);
-  const b = new Date(y2, m2 - 1, d2);
-  const diffMs = b.getTime() - a.getTime();
-  const diffDays = Math.round(diffMs / 86400000);
-  return diffDays === 1;
+/** 全部记录里「打卡日」的最长连续天数。 */
+export function computeLongestCheckinStreak(all: Record<string, DayRecord>): number {
+  const dates = Object.keys(all)
+    .filter((date) => isCheckinRecord(all[date]))
+    .sort();
+
+  let best = 0;
+  let current = 0;
+  let previous: string | null = null;
+  for (const date of dates) {
+    current = previous !== null && addCalendarDays(previous, 1) === date ? current + 1 : 1;
+    best = Math.max(best, current);
+    previous = date;
+  }
+  return best;
 }
 
 /**
- * 在所有本地记录中，计算「打卡日」最长连续日历天数（全局，不限最近 30 天）。
- * 若无任何打卡日，返回 0；单日打卡返回 1。
+ * 截至今天的当前连续打卡天数。今天还没打卡时从昨天开始算，
+ * 这样白天打开应用时不会看到连续记录「断掉」。
  */
-export function computeLongestCheckinStreak(all: Record<string, DayRecord>): number {
-  const dates = Object.keys(all).filter((ds) => {
-    const r = all[ds];
-    return r !== undefined && isCheckinRecord(r);
-  });
-  if (dates.length === 0) {
-    return 0;
+export function computeCurrentCheckinStreak(all: Record<string, DayRecord>, today: string): number {
+  let cursor = isCheckinRecord(all[today]) ? today : addCalendarDays(today, -1);
+  let streak = 0;
+  while (isCheckinRecord(all[cursor])) {
+    streak += 1;
+    cursor = addCalendarDays(cursor, -1);
   }
-  dates.sort();
-  let best = 1;
-  let cur = 1;
-  for (let i = 1; i < dates.length; i++) {
-    if (isConsecutiveCalendarDays(dates[i - 1], dates[i])) {
-      cur += 1;
-    } else {
-      cur = 1;
-    }
-    if (cur > best) {
-      best = cur;
-    }
-  }
-  return best;
+  return streak;
+}
+
+export function countCompleted(record: DayRecord | undefined): number {
+  return record?.tasks.filter((task) => task.completed).length ?? 0;
 }

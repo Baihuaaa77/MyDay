@@ -1,35 +1,49 @@
 import {
   type FC,
-  type KeyboardEventHandler,
-  type PointerEventHandler,
+  type KeyboardEvent,
+  type PointerEvent,
+  memo,
   useEffect,
   useRef,
   useState,
 } from "react";
-import { Check, CheckSquare, GripVertical, Pencil, Pin, Square, Trash2, X } from "lucide-react";
+import { ArrowUpToLine, Check, GripVertical, History, Trash2 } from "lucide-react";
 import type { Task } from "../types";
+import { diffCalendarDays, formatMonthDay } from "../utils/dateUtils";
+import { isComposingEnter } from "./TaskInput";
+
+export type TaskDropPosition = "before" | "after" | null;
 
 export interface TaskItemProps {
   task: Task;
-  onToggle: (id: string) => void;
-  onUpdateTitle: (id: string, title: string) => void;
-  onPin: (id: string) => void;
-  onDelete: (id: string) => void;
-  onDragHandlePointerDown: PointerEventHandler<HTMLButtonElement>;
+  recordDate: string;
+  readOnly?: boolean;
+  canPin?: boolean;
   dragging?: boolean;
+  dropPosition?: TaskDropPosition;
+  onToggle?: (id: string) => void;
+  onUpdateTitle?: (id: string, title: string) => void;
+  onPin?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onHandlePointerDown?: (event: PointerEvent<HTMLButtonElement>, id: string) => void;
 }
 
 const TaskItem: FC<TaskItemProps> = ({
   task,
+  recordDate,
+  readOnly = false,
+  canPin = true,
+  dragging = false,
+  dropPosition = null,
   onToggle,
   onUpdateTitle,
   onPin,
   onDelete,
-  onDragHandlePointerDown,
-  dragging = false,
+  onHandlePointerDown,
 }) => {
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(task.title);
+  const [justCompleted, setJustCompleted] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -45,16 +59,18 @@ const TaskItem: FC<TaskItemProps> = ({
     }
   }, [editing]);
 
-  const saveTitle = (): void => {
-    const trimmedTitle = draftTitle.trim();
-    if (trimmedTitle === "") {
-      setDraftTitle(task.title);
-      setEditing(false);
+  useEffect(() => {
+    if (!justCompleted) {
       return;
     }
+    const timer = window.setTimeout(() => setJustCompleted(false), 500);
+    return () => window.clearTimeout(timer);
+  }, [justCompleted]);
 
-    if (trimmedTitle !== task.title) {
-      onUpdateTitle(task.id, trimmedTitle);
+  const saveTitle = (): void => {
+    const trimmed = draftTitle.trim();
+    if (trimmed !== "" && trimmed !== task.title) {
+      onUpdateTitle?.(task.id, trimmed);
     }
     setEditing(false);
   };
@@ -64,128 +80,127 @@ const TaskItem: FC<TaskItemProps> = ({
     setEditing(false);
   };
 
-  const handleEditKeyDown: KeyboardEventHandler<HTMLInputElement> = (event) => {
-    if (event.key === "Enter") {
+  const handleEditKeyDown = (event: KeyboardEvent<HTMLInputElement>): void => {
+    if (event.key === "Enter" && !isComposingEnter(event)) {
       event.preventDefault();
       saveTitle();
-      return;
-    }
-
-    if (event.key === "Escape") {
+    } else if (event.key === "Escape") {
       event.preventDefault();
       cancelEditing();
     }
   };
 
+  const carryDays =
+    task.carryoverFromDate !== undefined ? diffCalendarDays(task.carryoverFromDate, recordDate) : 0;
+
+  const rowClass = [
+    "task-row",
+    dragging ? "task-row-dragging" : "",
+    dropPosition === "before" ? "task-row-drop-before" : "",
+    dropPosition === "after" ? "task-row-drop-after" : "",
+  ].join(" ");
+
   return (
-    <div
-      className={`soft-list-item task-item-shell ${
-        dragging ? "border-cyan-200 bg-cyan-50/70 shadow-md" : ""
-      }`}
-    >
-      <button
-        type="button"
-        className="task-drag-handle"
-        onPointerDown={onDragHandlePointerDown}
-        aria-label="拖动调整任务顺序"
-        title="拖动调整顺序"
-      >
-        <GripVertical className="h-5 w-5" aria-hidden />
-      </button>
-
-      <button
-        type="button"
-        onClick={() => onToggle(task.id)}
-        className="task-icon-action text-[#0b8f99] hover:bg-cyan-50 focus:ring-cyan-400"
-        aria-label={task.completed ? "标记为未完成" : "标记为已完成"}
-        aria-pressed={task.completed}
-      >
-        {task.completed ? (
-          <CheckSquare className="h-6 w-6 text-[#10aab2]" aria-hidden />
-        ) : (
-          <Square className="h-6 w-6 text-slate-400" aria-hidden />
-        )}
-      </button>
-
-      {editing ? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={draftTitle}
-          onChange={(event) => setDraftTitle(event.target.value)}
-          onKeyDown={handleEditKeyDown}
-          onBlur={saveTitle}
-          className="task-edit-input"
-          aria-label="编辑任务内容"
-        />
-      ) : (
+    <div className={rowClass}>
+      {!readOnly && onHandlePointerDown !== undefined ? (
         <button
           type="button"
-          className={`min-w-0 flex-1 break-words rounded-lg px-1 py-1 text-left text-base leading-relaxed transition hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
-            task.completed ? "text-slate-400 line-through" : "text-slate-900"
-          }`}
-          onClick={() => setEditing(true)}
-          aria-label={`编辑任务：${task.title}`}
+          className="task-handle"
+          onPointerDown={(event) => onHandlePointerDown(event, task.id)}
+          aria-label="拖动调整任务顺序"
+          title="拖动排序"
+          tabIndex={-1}
         >
-          {task.title}
+          <GripVertical className="h-4 w-4" aria-hidden />
         </button>
-      )}
-
-      {editing ? (
-        <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            onMouseDown={(event) => event.preventDefault()}
-            onPointerDown={(event) => event.preventDefault()}
-            onClick={saveTitle}
-            className="task-icon-action text-[#0b8f99] hover:bg-cyan-50 focus:ring-cyan-400"
-            aria-label="保存任务内容"
-          >
-            <Check className="h-5 w-5" aria-hidden />
-          </button>
-          <button
-            type="button"
-            onMouseDown={(event) => event.preventDefault()}
-            onPointerDown={(event) => event.preventDefault()}
-            onClick={cancelEditing}
-            className="task-icon-action text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:ring-slate-300"
-            aria-label="取消编辑"
-          >
-            <X className="h-5 w-5" aria-hidden />
-          </button>
-        </div>
       ) : (
-        <div className="flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            onClick={() => onPin(task.id)}
-            className="task-icon-action text-slate-400 hover:bg-amber-50 hover:text-amber-600 focus:ring-amber-300"
-            aria-label="置顶任务"
-            title="置顶"
-          >
-            <Pin className="h-5 w-5" aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="task-icon-action text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:ring-slate-300"
-            aria-label="编辑任务内容"
-          >
-            <Pencil className="h-5 w-5" aria-hidden />
-          </button>
-        </div>
+        <span className="w-1 shrink-0" aria-hidden />
       )}
 
       <button
         type="button"
-        onClick={() => onDelete(task.id)}
-        className="task-icon-action text-slate-400 hover:bg-red-50 hover:text-red-600 focus:ring-red-400"
-        aria-label="删除任务"
+        className="task-check"
+        onClick={() => {
+          if (!task.completed) {
+            setJustCompleted(true);
+          }
+          onToggle?.(task.id);
+        }}
+        disabled={readOnly}
+        aria-pressed={task.completed}
+        aria-label={task.completed ? `标记「${task.title}」为未完成` : `完成「${task.title}」`}
       >
-        <Trash2 className="h-5 w-5" aria-hidden />
+        <span className={`task-check-ring ${justCompleted ? "animate-pop-in" : ""}`}>
+          <Check className="h-3.5 w-3.5" strokeWidth={3.5} aria-hidden />
+        </span>
       </button>
+
+      <div className="min-w-0 flex-1 py-1">
+        {editing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={draftTitle}
+            maxLength={200}
+            onChange={(event) => setDraftTitle(event.target.value)}
+            onKeyDown={handleEditKeyDown}
+            onBlur={saveTitle}
+            enterKeyHint="done"
+            className="input -my-1 h-9 px-2.5 py-1"
+            aria-label="编辑任务内容"
+          />
+        ) : (
+          <button
+            type="button"
+            className={`block w-full min-w-0 break-words rounded-md text-left text-[15px] leading-6 transition-colors ${
+              task.completed ? "text-ink-3 line-through decoration-ink-3/60" : "text-ink"
+            } ${readOnly ? "cursor-default" : "cursor-text"}`}
+            onClick={() => !readOnly && setEditing(true)}
+            disabled={readOnly}
+            title={readOnly ? undefined : "点击编辑"}
+          >
+            {task.title}
+          </button>
+        )}
+        {carryDays > 0 && !editing ? (
+          <span
+            className={`badge mt-1 ${
+              carryDays >= 3 ? "bg-warm-soft text-warm" : "bg-surface-3 text-ink-2"
+            }`}
+            title={`从 ${formatMonthDay(task.carryoverFromDate ?? "", false)} 自动顺延而来`}
+          >
+            <History className="h-3 w-3" aria-hidden />
+            已顺延 {carryDays} 天
+          </span>
+        ) : null}
+      </div>
+
+      {!readOnly && !editing ? (
+        <div className="task-actions">
+          {canPin ? (
+            <button
+              type="button"
+              className="icon-btn hover:text-brand-strong"
+              onClick={() => onPin?.(task.id)}
+              aria-label="置顶任务"
+              title="置顶"
+            >
+              <ArrowUpToLine className="h-4 w-4" aria-hidden />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="icon-btn hover:bg-danger-soft hover:text-danger"
+            onClick={() => onDelete?.(task.id)}
+            aria-label="删除任务"
+            title="删除"
+          >
+            <Trash2 className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 };
 
-export default TaskItem;
+export default memo(TaskItem);

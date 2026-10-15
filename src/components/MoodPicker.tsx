@@ -1,125 +1,73 @@
-import { type FC, useEffect, useId, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { type FC, useState } from "react";
 import { MOOD_OPTIONS, getMoodById } from "../data/moods";
 
 export interface MoodPickerProps {
   value: string | null;
-  onChange?: (moodId: string) => void;
+  onChange?: (moodId: string | null) => void;
   readOnly?: boolean;
-  emptyLabel?: string;
 }
 
-const MoodPicker: FC<MoodPickerProps> = ({
-  value,
-  onChange,
-  readOnly = false,
-  emptyLabel = "选一个代表今天的状态吧",
-}) => {
-  const selectedMood = getMoodById(value);
-  const listId = useId();
-  const [isOpen, setIsOpen] = useState(false);
-  const [animatingId, setAnimatingId] = useState<string | null>(null);
+/**
+ * 状态选择：7 个 emoji 平铺，一次点击即可完成；再次点击已选项可取消。
+ */
+const MoodPicker: FC<MoodPickerProps> = ({ value, onChange, readOnly = false }) => {
+  const [justPicked, setJustPicked] = useState<string | null>(null);
+  const selected = getMoodById(value);
 
-  useEffect(() => {
-    if (animatingId === null) {
-      return;
-    }
-    const timer = setTimeout(() => setAnimatingId(null), 600);
-    return () => clearTimeout(timer);
-  }, [animatingId]);
-
-  const handleSelect = (moodId: string): void => {
-    if (readOnly || !onChange) {
-      return;
-    }
-    setAnimatingId(moodId);
-    setIsOpen(false);
-    onChange(moodId);
-  };
+  if (readOnly) {
+    return (
+      <div className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2.5">
+        <span className="text-2xl leading-none" aria-hidden>
+          {selected?.emoji ?? "·"}
+        </span>
+        <span className="text-sm font-medium text-ink-2">{selected?.label ?? "没有记录状态"}</span>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="group/mood mobile-fit-control relative min-w-0 max-w-md"
-      onMouseEnter={() => !readOnly && setIsOpen(true)}
-      onMouseLeave={() => !readOnly && setIsOpen(false)}
-    >
-      <button
-        type="button"
-        disabled={readOnly}
-        aria-expanded={!readOnly && isOpen}
-        aria-controls={listId}
-        onClick={() => !readOnly && setIsOpen((open) => !open)}
-        onFocus={() => !readOnly && setIsOpen(true)}
-        className="flex w-full items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 text-left shadow-inner transition-all duration-300 hover:border-cyan-200 hover:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:cursor-default disabled:hover:border-slate-200/80 disabled:hover:bg-slate-50/80 sm:gap-4 sm:p-5"
-      >
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-white bg-white text-center shadow-sm sm:h-24 sm:w-24 sm:rounded-[1.5rem]">
-          {selectedMood ? (
-            <span
-              className={`text-4xl leading-none sm:text-6xl ${
-                animatingId === selectedMood.id ? "animate-mood-bounce" : "animate-mood-float"
-              }`}
-              role="img"
-              aria-label={selectedMood.label}
-            >
-              {selectedMood.emoji}
-            </span>
-          ) : (
-            <span className="text-4xl leading-none text-slate-200 sm:text-6xl">?</span>
-          )}
-        </span>
-
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-slate-900 sm:text-base">
-            {selectedMood ? selectedMood.label : "还没有选择状态"}
-          </span>
-          <span className="mt-1 block text-sm leading-5 text-slate-500 sm:leading-6">
-            {readOnly ? "这一天没有记录状态" : selectedMood ? "点击或悬浮这里切换状态" : emptyLabel}
-          </span>
-        </span>
-
-        {!readOnly && (
-          <ChevronDown
-            className={`h-5 w-5 shrink-0 text-slate-400 transition-transform duration-300 ${
-              isOpen ? "rotate-180" : ""
+    <div className="grid grid-cols-7 gap-1 sm:gap-1.5" role="radiogroup" aria-label="选择当天状态">
+      {MOOD_OPTIONS.map((mood) => {
+        const isSelected = value === mood.id;
+        const dimmed = value !== null && !isSelected;
+        return (
+          <button
+            key={mood.id}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            aria-label={mood.label}
+            title={isSelected ? `${mood.label}（再次点击取消）` : mood.label}
+            onClick={() => {
+              setJustPicked(isSelected ? null : mood.id);
+              onChange?.(isSelected ? null : mood.id);
+            }}
+            className={`group flex min-w-0 flex-col items-center gap-1 rounded-xl border px-0.5 py-2 transition-all duration-200 ${
+              isSelected
+                ? "border-brand/50 bg-brand-soft shadow-sm"
+                : "border-transparent hover:bg-surface-2"
             }`}
-            aria-hidden
-          />
-        )}
-      </button>
-
-      {!readOnly && (
-        <div
-          id={listId}
-          className={`overflow-hidden transition-all duration-300 ${
-            isOpen
-              ? "max-h-40 translate-y-0 opacity-100"
-              : "pointer-events-none max-h-0 -translate-y-2 opacity-0"
-          }`}
-        >
-          <div className="mt-3 flex flex-nowrap items-center gap-2 overflow-x-auto rounded-2xl border border-slate-200/70 bg-white/95 p-2 shadow-lg sm:gap-3 sm:p-3">
-            {MOOD_OPTIONS.map((mood) => {
-              const isSelected = value === mood.id;
-              return (
-                <button
-                  key={mood.id}
-                  type="button"
-                  onClick={() => handleSelect(mood.id)}
-                  className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 sm:h-14 sm:w-14 sm:text-3xl ${
-                    isSelected
-                      ? "scale-105 bg-cyan-50 shadow-sm ring-2 ring-[#10aab2]"
-                      : "border border-slate-200/70 bg-slate-50/80 hover:scale-105 hover:bg-white hover:shadow-md"
-                  }`}
-                  aria-label={mood.label}
-                  aria-pressed={isSelected}
-                  title={mood.label}
-                >
-                  {mood.emoji}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+          >
+            <span
+              className={`text-[26px] leading-none transition-all duration-200 sm:text-[28px] ${
+                dimmed ? "opacity-45 grayscale-[40%] group-hover:opacity-100 group-hover:grayscale-0" : ""
+              } ${isSelected && justPicked === mood.id ? "animate-pop-in" : ""} ${
+                isSelected ? "scale-110" : "group-hover:scale-110"
+              }`}
+              aria-hidden
+            >
+              {mood.emoji}
+            </span>
+            <span
+              className={`truncate text-[11px] font-semibold ${
+                isSelected ? "text-brand-strong" : "text-ink-3"
+              }`}
+            >
+              {mood.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 };

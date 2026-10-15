@@ -10,8 +10,8 @@ export const MOOD_OPTIONS: readonly MoodOption[] = [
   { id: "sad", emoji: "\u{1F622}", label: "难过" },
 ];
 
-export function getMoodById(moodId: string | null): MoodOption | undefined {
-  if (moodId === null) {
+export function getMoodById(moodId: string | null | undefined): MoodOption | undefined {
+  if (moodId === null || moodId === undefined) {
     return undefined;
   }
   return MOOD_OPTIONS.find((m) => m.id === moodId);

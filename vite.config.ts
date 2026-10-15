@@ -14,7 +14,8 @@ function collectPrecacheAssets(directory: string, root = directory): string[] {
     }
 
     const relativePath = relative(root, fullPath).replace(/\\/g, "/");
-    if (relativePath === "sw.js") {
+    // sw.js 本身、未被页面引用的大图（背景图、1024 图标）不进预缓存
+    if (relativePath === "sw.js" || /(?:rain-window-bg|icon-1024)/.test(relativePath)) {
       return [];
     }
 
@@ -54,7 +55,6 @@ function mydayServiceWorkerPlugin() {
   };
 }
 
-// Vite 配置：启用 React 插件（支持 JSX、Fast Refresh 等）
 export default defineConfig({
   base: "./",
   plugins: [react(), mydayServiceWorkerPlugin()],

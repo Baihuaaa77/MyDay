@@ -1,66 +1,146 @@
-import { type FC } from "react";
+import { type FC, type KeyboardEvent, useRef, useState } from "react";
 import { Star } from "lucide-react";
 
 export interface StarRatingProps {
   value: number | null;
-  onChange?: (rating: number) => void;
+  onChange?: (rating: number | null) => void;
   readOnly?: boolean;
 }
 
 const STAR_COUNT = 10;
-const STAR_ICON_CLASS = "star-rating-icon";
 
+export function getRatingLabel(score: number | null): string {
+  if (score === null) {
+    return "未评分";
+  }
+  if (score <= 2) {
+    return "很艰难";
+  }
+  if (score <= 4) {
+    return "不太顺";
+  }
+  if (score <= 6) {
+    return "还不错";
+  }
+  if (score <= 8) {
+    return "很充实";
+  }
+  if (score === 9) {
+    return "超棒的";
+  }
+  return "完美一天";
+}
+
+/**
+ * 1～10 分自评：悬停预览分数，再次点击当前分数可清除；支持方向键调整。
+ */
 const StarRating: FC<StarRatingProps> = ({ value, onChange, readOnly = false }) => {
-  const handleSelect = (rating: number): void => {
-    if (readOnly || !onChange) {
-      return;
+  const [hovered, setHovered] = useState<number | null>(null);
+  const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const shown = hovered ?? value;
+  const interactive = !readOnly && onChange !== undefined;
+
+  const select = (score: number): void => {
+    onChange?.(score === value ? null : score);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, score: number): void => {
+    let next: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+      next = Math.min(STAR_COUNT, score + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+      next = Math.max(1, score - 1);
+    } else if (event.key === "Home") {
+      next = 1;
+    } else if (event.key === "End") {
+      next = STAR_COUNT;
     }
-    onChange(rating);
+    if (next !== null) {
+      event.preventDefault();
+      onChange?.(next);
+      buttonsRef.current[next - 1]?.focus();
+    }
   };
 
   return (
-    <div
-      className="star-rating-control mobile-fit-control"
-      role={readOnly ? "img" : "radiogroup"}
-      aria-label={readOnly ? `自评分数 ${value ?? "未评分"} 分` : "自评分数，1 到 10 分"}
-    >
-      {Array.from({ length: STAR_COUNT }, (_, index) => {
-        const score = index + 1;
-        const isActive = value !== null && score <= value;
-        const star = (
-          <Star
-            className={`${STAR_ICON_CLASS} ${
-              isActive
-                ? "fill-amber-400 text-amber-400 drop-shadow-sm"
-                : "fill-transparent text-slate-300"
-            }`}
-            strokeWidth={isActive ? 1.5 : 2}
-            aria-hidden
-          />
-        );
-
-        if (readOnly) {
-          return (
-            <div key={score} className="star-rating-button">
-              {star}
-            </div>
+    <div className="min-w-0">
+      <div
+        className="flex items-center gap-0.5 sm:gap-1"
+        role={interactive ? "radiogroup" : "img"}
+        aria-label={interactive ? "自评分数，1 到 10 分" : `自评 ${value ?? "未评分"} 分`}
+        onMouseLeave={() => setHovered(null)}
+      >
+        {Array.from({ length: STAR_COUNT }, (_, index) => {
+          const score = index + 1;
+          const active = shown !== null && score <= shown;
+          const icon = (
+            <Star
+              className={`h-full w-full max-h-7 max-w-7 transition-colors duration-150 ${
+                active
+                  ? hovered !== null && value !== null && score > value
+                    ? "fill-warm/50 text-warm/70"
+                    : "fill-warm text-warm"
+                  : "fill-transparent text-line-strong"
+              }`}
+              strokeWidth={1.75}
+              aria-hidden
+            />
           );
-        }
 
-        return (
+          if (!interactive) {
+            return (
+              <span key={score} className="star-btn pointer-events-none p-[3px]">
+                {icon}
+              </span>
+            );
+          }
+
+          const isChecked = value === score;
+          return (
+            <button
+              key={score}
+              ref={(element) => {
+                buttonsRef.current[index] = element;
+              }}
+              type="button"
+              role="radio"
+              aria-checked={isChecked}
+              aria-label={`${score} 分`}
+              tabIndex={isChecked || (value === null && score === 1) ? 0 : -1}
+              className="star-btn p-[3px]"
+              onClick={() => select(score)}
+              onPointerEnter={(event) => {
+                // 触屏点击也会触发 enter，只在鼠标下做悬停预览
+                if (event.pointerType === "mouse") {
+                  setHovered(score);
+                }
+              }}
+              onFocus={() => setHovered(null)}
+              onKeyDown={(event) => handleKeyDown(event, score)}
+            >
+              {icon}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="tabular text-2xl font-bold leading-none text-ink">
+          {shown ?? "–"}
+          <span className="ml-0.5 text-sm font-semibold text-ink-3">/10</span>
+        </span>
+        <span className={`text-sm font-medium ${shown === null ? "text-ink-3" : "text-ink-2"}`}>
+          {getRatingLabel(shown)}
+        </span>
+        {interactive && value !== null && hovered === null ? (
           <button
-            key={score}
             type="button"
-            role="radio"
-            aria-checked={value === score}
-            aria-label={`${score} 分`}
-            onClick={() => handleSelect(score)}
-            className="star-rating-button transition-all duration-300 hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1"
+            className="ml-auto text-xs font-medium text-ink-3 transition hover:text-ink-2"
+            onClick={() => onChange?.(null)}
           >
-            {star}
+            清除
           </button>
-        );
-      })}
+        ) : null}
+      </div>
     </div>
   );
 };

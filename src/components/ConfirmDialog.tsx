@@ -1,23 +1,17 @@
-import { type FC, type MouseEvent } from "react";
+import { type FC, type ReactNode, useEffect, useId, useRef } from "react";
 
 /**
- * 确认弹层：固定遮罩 + 居中卡片，替代浏览器原生 confirm（项目规则禁止 alert/confirm）。
- * 类比：在桌面应用里常见的「模态对话框」，焦点锁在这一层直到用户点确定或取消。
+ * 确认弹层：替代浏览器原生 confirm。支持 Esc 关闭、打开时聚焦确认按钮、
+ * 关闭后把焦点还给触发元素。手机上从底部弹出，桌面居中。
  */
 export interface ConfirmDialogProps {
-  /** 是否显示（为 false 时不渲染交互层，避免占焦点） */
   open: boolean;
-  /** 标题 */
   title: string;
-  /** 说明正文 */
-  message: string;
-  /** 确认按钮文案，默认「确定」 */
+  message: ReactNode;
   confirmLabel?: string;
-  /** 取消按钮文案，默认「取消」 */
   cancelLabel?: string;
-  /** 用户点击确认 */
+  tone?: "primary" | "danger";
   onConfirm: () => void;
-  /** 用户点击取消或关闭 */
   onCancel: () => void;
 }
 
@@ -27,51 +21,61 @@ const ConfirmDialog: FC<ConfirmDialogProps> = ({
   message,
   confirmLabel = "确定",
   cancelLabel = "取消",
+  tone = "primary",
   onConfirm,
   onCancel,
 }) => {
+  const titleId = useId();
+  const confirmRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    confirmRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCancel();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = overflow;
+      previouslyFocused?.focus?.();
+    };
+  }, [onCancel, open]);
+
   if (!open) {
     return null;
   }
 
-  const handleBackdropClick = (): void => {
-    onCancel();
-  };
-
-  const handleCardClick = (e: MouseEvent<HTMLDivElement>): void => {
-    // 阻止点击卡片内部时冒泡到遮罩，避免误关
-    e.stopPropagation();
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 px-4 py-4 backdrop-blur-sm sm:items-center sm:py-8"
-      role="presentation"
-      onClick={handleBackdropClick}
-    >
+    <div className="overlay" role="presentation" onClick={onCancel} data-swipe-lock="true">
       <div
-        className="w-full max-w-md rounded-2xl border border-white/80 bg-white/95 p-5 shadow-[0_30px_90px_rgba(15,23,42,0.28)] backdrop-blur-xl transition-all duration-300 sm:p-6"
-        role="dialog"
+        className="dialog"
+        role="alertdialog"
         aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-        onClick={handleCardClick}
+        aria-labelledby={titleId}
+        onClick={(event) => event.stopPropagation()}
       >
-        <h2 id="confirm-dialog-title" className="text-lg font-semibold text-slate-950">
+        <h2 id={titleId} className="text-lg font-bold text-ink">
           {title}
         </h2>
-        <p className="mt-3 text-base leading-relaxed text-slate-600">{message}</p>
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="btn-secondary w-full sm:w-auto"
-          >
+        <div className="mt-2 text-sm leading-6 text-ink-2">{message}</div>
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <button type="button" onClick={onCancel} className="btn-secondary w-full sm:w-auto">
             {cancelLabel}
           </button>
           <button
+            ref={confirmRef}
             type="button"
             onClick={onConfirm}
-            className="btn-primary w-full px-4 py-2 sm:w-auto"
+            className={`${tone === "danger" ? "btn-danger" : "btn-primary"} w-full sm:w-auto`}
           >
             {confirmLabel}
           </button>

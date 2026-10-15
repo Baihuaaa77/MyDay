@@ -3,9 +3,9 @@ const PRECACHE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./myday-icon-180.png",
-  "./myday-icon-192.png",
-  "./myday-icon-512.png",
+  "./myday-icon-180-v2.png",
+  "./myday-icon-192-v2.png",
+  "./myday-icon-512-v2.png",
 ];
 
 async function cacheAsset(cache, asset) {
@@ -50,11 +50,14 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put("./", copy.clone());
-            cache.put("./index.html", copy);
-          });
+          // 只缓存成功的页面，避免把 404 / 5xx 当成离线页
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put("./", copy.clone());
+              cache.put("./index.html", copy);
+            });
+          }
           return response;
         })
         .catch(

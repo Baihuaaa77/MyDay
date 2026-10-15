@@ -1,11 +1,12 @@
+import { getLocalDayNumber } from "./dateUtils";
+
 /**
- * 根据「自 1970-01-01 以来的 UTC 日数」在 quotes 长度内取模，得到当天稳定的引言下标。
- * 与需求文档一致：同一天内多次刷新索引不变，跨 UTC 日自然切换（类比 Python 里用 date.today() 做随机种子）。
+ * 按本地日历日在 quotes 长度内取模，得到当天稳定的引言下标：
+ * 同一天内多次刷新不变，过了本地零点自然切换。
  */
-export function getDailyQuoteIndex(quotesLength: number): number {
+export function getDailyQuoteIndex(quotesLength: number, date?: string): number {
   if (quotesLength <= 0) {
     return 0;
   }
-  const daysSinceEpoch = Math.floor(Date.now() / 86400000);
-  return daysSinceEpoch % quotesLength;
+  return getLocalDayNumber(date) % quotesLength;
 }

@@ -3,25 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" sizes="192x192" href="./myday-icon-192-v2.png" />
-    <link rel="shortcut icon" type="image/png" sizes="192x192" href="./myday-icon-192-v2.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="./myday-icon-180-v2.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="./myday-icon-180-v2.png" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#0f766e" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4f7f9" />
     <meta name="application-name" content="MyDay" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="MyDay" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta
-      name="description"
-      content="MyDay 是一个轻量的每日计划、复盘和数据统计工具。"
-    />
+    <meta name="description" content="MyDay 是一个轻量的每日计划、复盘和数据统计工具。" />
     <title>MyDay</title>
+    <script>
+      // 在首屏渲染前应用主题，避免深色模式下闪白
+      (function () {
+        try {
+          var stored = localStorage.getItem("myday-theme");
+          var dark =
+            stored === "dark" ||
+            (stored !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
